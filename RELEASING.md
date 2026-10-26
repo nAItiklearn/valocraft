@@ -98,7 +98,26 @@ is the distribution version; the binaries still report their compiled version.
 Use a new tag for every release. Do not reuse a published tag for a different
 build.
 
-## Mobile
+## Android
 
-Android and iOS are not part of this workflow. See [`MOBILE.md`](MOBILE.md) for the
-separate porting work and iOS signing requirements.
+The experimental Android build is separate from the desktop release workflow and
+is kept on the `android-port` branch. It uses
+`.github/workflows/android-release.yml` there and publishes a separate release
+tag named `android-v*`, for example `android-v0.1.2`.
+
+```bash
+git checkout android-port
+git tag -a android-v0.1.2 -m "Valocraft Android v0.1.2 experimental build"
+git push github android-v0.1.2
+```
+
+The workflow builds an arm64-v8a APK, verifies that the real game assets and the
+native library are packaged, signs it, and uploads the APK plus a SHA-256 checksum.
+The APK is signed with a debug key for sideload testing unless the repository has
+the `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, and
+`ANDROID_KEY_ALIAS` Actions secrets configured. A public release needs a dedicated
+signing key; do not put a keystore in the repository. Android release builds use
+the `android-port` branch's own workflow and do not modify the desktop release.
+
+iOS is not part of either workflow. A real iPhone build requires Apple developer
+signing/provisioning and a macOS runner; see [`MOBILE.md`](MOBILE.md).

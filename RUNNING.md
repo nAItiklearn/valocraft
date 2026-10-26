@@ -12,9 +12,11 @@ Download the archive for your platform, extract it completely, and use the
 launcher inside it. Do not run the client directly from inside the `.zip` or
 `.tar.gz` — it needs the `assets/` folder next to it.
 
-> **Mobile:** Android and iPhone/iPad builds are not available yet. The current
-> client is a desktop game with keyboard/mouse controls. See
-> [`MOBILE.md`](MOBILE.md) for the porting plan.
+> **Mobile (experimental):** An arm64 Android APK is available on the
+> [Android release](https://github.com/nAItiklearn/valocraft/releases/tag/android-v0.1.2).
+> It is debug-signed for sideloading, uses touch controls, and still needs testing
+> on physical devices. iPhone/iPad builds are not available; Apple signing and a
+> Mac are required. See [`MOBILE.md`](MOBILE.md).
 
 ---
 

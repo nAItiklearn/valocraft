@@ -2,14 +2,19 @@
 
 ## Short answer
 
-Valocraft is currently a **desktop game**. There is no official Android or iOS
-client, no touch-control layout, and no mobile release artifact. Turning the
-desktop client into a playable mobile game is a port, not a packaging toggle, and
-it cannot be completed by simply rebuilding the existing binary as an APK or IPA.
+Valocraft is still primarily a **desktop game**. The `android-port` branch now
+contains an experimental native Android shell: a shared game entry point,
+`android_main`, first-launch asset extraction, offline singleplayer boot, real
+game assets, a launcher icon, and a basic touch-control translation layer. A
+signed `arm64-v8a` APK now builds locally with a debug key. It has **not yet
+been installed on a physical phone or emulator**, so treat it as an
+experimental sideload build rather than a tested phone release. An iPhone
+release remains blocked by both engine work and Apple code signing.
 
 The desktop release pipeline is separate and works today. See
 [`RUNNING.md`](RUNNING.md) for Windows, macOS, and Linux downloads and local
-instructions.
+instructions. The Android work is deliberately kept off the desktop release
+branch until it has device testing.
 
 ---
 
@@ -143,15 +148,76 @@ iPhone release today.
 - Asset and userdata environment overrides (`VELOREN_ASSETS`,
   `VELOREN_USERDATA`) that a mobile launcher can set before startup.
 
+### Experimental Android branch
+
+The `android-port` branch adds:
+
+- `android_main` in `voxygen/src/lib.rs`, using the shared `voxygen/src/entry.rs`
+  startup path instead of a second game implementation.
+- A `cargo-apk` package definition (`com.valocraft.game`, min SDK 26, target 35,
+  landscape, arm64-v8a).
+- First-launch extraction of the APK's bundled `assets/` tree into the app's
+  internal data directory, with `VELOREN_ASSETS` and `VELOREN_USERDATA` set before
+  settings load.
+- A touch translation layer in `voxygen/src/mobile_input.rs`:
+  - lower-left: virtual movement joystick;
+  - right/upper area: drag to look; a short tap performs the primary action;
+  - lower-right: jump and primary action zones;
+  - top-left: menu/escape; top-right: inventory and map;
+  - menus use the existing UI mouse path for finger taps.
+- `scripts/build_android.sh`, which builds a static Android shaderc library with
+  the NDK and then runs `cargo apk build` for `singleplayer,simd`.
+
+The local build now produces `target-android/release/apk/Valocraft.apk`
+(debug-signed, arm64-v8a, Android 8+). It contains the full game assets and
+launcher icon; the APK is about 374 MB and extracts about 524 MB into the app's
+internal storage on first launch. The build script refuses to package Git LFS
+pointer files, and it statically links the Android shaderc library.
+
+The remaining gates are APK installation on a physical device, startup and
+first-launch extraction time, touch-menu usability, save/log behavior, and
+frame rate/thermal testing. Do not announce a tested mobile release before
+those checks pass.
+
+### Android local build
+
+Required host tools:
+
+- JDK 21 and Android SDK command-line tools, platform 35, and build-tools 35.
+- Android NDK r27c (or another NDK supported by the Rust target).
+- CMake, Ninja, and `cargo-apk` 0.10.
+
+```bash
+# The APK needs real game assets, not Git LFS pointer files.
+git lfs pull
+
+export ANDROID_HOME="$HOME/.local/tools/android-sdk"
+export ANDROID_NDK_HOME="$HOME/.local/tools/android-ndk-r27c"
+export JAVA_HOME="$HOME/.local/tools/jdk-21"
+./scripts/build_android.sh
+```
+
+The script builds the static shaderc library with CMake + Ninja, cross-compiles
+the client for `aarch64-linux-android`, and signs the result. Without an explicit
+signing key it uses `~/.android/debug.keystore`, which is acceptable for local
+sideloading but not for a store or a trusted public release. For a public
+release, set `CARGO_APK_RELEASE_KEYSTORE` and
+`CARGO_APK_RELEASE_KEYSTORE_PASSWORD` and keep the key out of the repository.
+
+The output is `target-android/release/apk/Valocraft.apk`. Install it with
+`adb install -r target-android/release/apk/Valocraft.apk` once a device is
+connected. The APK contains only `arm64-v8a`; it will not run on an x86_64
+emulator without a second cross-compiled build.
+
 ## Recommended order
 
 1. Ship and verify the desktop release.
-2. Build the Android headless/window prototype on one physical device.
-3. Add touch controls and storage.
-4. Add the mobile quality preset and lifecycle handling.
-5. Only then start the iOS port and Apple signing work.
+2. Install the current APK on one physical Android device and verify startup,
+   asset extraction, touch controls, saves, and frame rate.
+3. Add the mobile quality preset and lifecycle handling.
+4. Only then start the iOS port and Apple signing work.
 
-If you want to proceed, the next concrete step is an Android prototype branch
-with `android-activity`, NDK cross-compilation, and a debug APK. It should be
-developed and tested separately from the desktop release branch so desktop
-downloads remain stable.
+The next concrete step is to sideload the current arm64 APK on one physical
+Android device. Keep the mobile work on `android-port` until startup, touch
+controls, saves, and performance have been verified; desktop downloads must
+remain independent of experimental mobile changes.

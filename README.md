@@ -21,15 +21,18 @@ Prebuilt desktop builds are published on the
 | macOS (Apple Silicon) | `.dmg` / `.tar.gz` | `Valocraft.app` |
 | macOS (Intel) | `.dmg` / `.tar.gz` | `Valocraft.app` |
 | Linux (x86_64) | `.tar.gz` | `./run.sh` |
+| Android 8+ (arm64, experimental) | `.apk` | install manually |
 
 Each archive is self-contained: it includes the client, the optional dedicated
 server, all game assets, and the player documentation. Extract the whole archive
 and use the launcher inside it. Platform-specific runtime packages, Gatekeeper
 notes, and troubleshooting are in [`RUNNING.md`](RUNNING.md).
 
-> **Mobile:** Android and iPhone/iPad builds are not available yet. The current
-> client uses keyboard/mouse controls and a desktop UI. See [`MOBILE.md`](MOBILE.md)
-> for the porting plan and the iOS signing requirements.
+> **Mobile (experimental):** An arm64 Android APK is available on the
+> [Android release](https://github.com/nAItiklearn/valocraft/releases/tag/android-v0.1.2).
+> It is debug-signed for sideloading, uses touch controls, and still needs testing
+> on physical devices. iPhone/iPad builds are not available; Apple signing and a
+> Mac are required. See [`MOBILE.md`](MOBILE.md).
 
 ---
 
@@ -187,7 +190,7 @@ release with [`RELEASING.md`](RELEASING.md).
 - More adventure content, dungeons, quests, and world events.
 - Continued combat, crafting, and progression balance.
 - More UI polish, accessibility, and desktop packaging.
-- Android and iOS ports (see [`MOBILE.md`](MOBILE.md)).
+- Android port (experimental) and iOS port (see [`MOBILE.md`](MOBILE.md)).
 
 ---
 
