@@ -21,6 +21,14 @@ jobs:
           lfs: false
           fetch-depth: 1
 
+      - name: Fetch the application icon from LFS
+        shell: bash
+        run: |
+          set -euo pipefail
+          git lfs install --local
+          git lfs pull --include="assets/voxygen/logo-windows.ico"
+          test "$(wc -c < assets/voxygen/logo-windows.ico)" -gt 1000
+
       - name: Install Rust toolchain
         run: rustup show
 
