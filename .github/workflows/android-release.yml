@@ -167,7 +167,7 @@ jobs:
           version="${{ inputs.release_tag || github.ref_name }}"
           version="${version#android-}"
           cp "$apk" "dist/Valocraft-${version}-android-arm64.apk"
-          sha256sum dist/*.apk > dist/SHA256SUMS.txt
+          (cd dist && sha256sum *.apk > SHA256SUMS.txt)
           ls -lh dist
 
       - name: Upload APK
