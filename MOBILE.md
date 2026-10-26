@@ -2,19 +2,20 @@
 
 ## Short answer
 
-Valocraft is still primarily a **desktop game**. The `android-port` branch now
+Valocraft is still primarily a **desktop game**. The `android-port` branch
 contains an experimental native Android shell: a shared game entry point,
 `android_main`, first-launch asset extraction, offline singleplayer boot, real
 game assets, a launcher icon, and a basic touch-control translation layer. A
-signed `arm64-v8a` APK now builds locally with a debug key. It has **not yet
-been installed on a physical phone or emulator**, so treat it as an
-experimental sideload build rather than a tested phone release. An iPhone
-release remains blocked by both engine work and Apple code signing.
+signed `arm64-v8a` APK is published as the separate experimental
+[`android-v0.1.2`](https://github.com/nAItiklearn/valocraft/releases/tag/android-v0.1.2)
+release. It uses a debug key for sideloading. It has **not yet been installed
+on a physical phone or emulator**, so treat it as an experimental sideload
+build rather than a tested phone release. An iPhone release remains blocked by
+both engine work and Apple code signing.
 
-The desktop release pipeline is separate and works today. See
-[`RUNNING.md`](RUNNING.md) for Windows, macOS, and Linux downloads and local
-instructions. The Android work is deliberately kept off the desktop release
-branch until it has device testing.
+The desktop release pipeline is separate; see [`RUNNING.md`](RUNNING.md) for
+Windows, macOS, and Linux downloads. The Android source stays on `android-port`
+and is not merged into the desktop release branch.
 
 ---
 
