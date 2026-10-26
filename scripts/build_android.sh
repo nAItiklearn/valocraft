@@ -50,6 +50,11 @@ if ! command -v cargo-apk >/dev/null; then
     exit 1
 fi
 
+# Download the crate sources before looking for shaderc-sys.  A fresh CI
+# checkout has no registry sources yet, and cargo-apk invokes the shaderc build
+# only after this script has already prepared the static library.
+cargo fetch --locked
+
 # shaderc-sys can use a prebuilt static library through this variable.  Build
 # it ourselves with the NDK toolchain instead of letting shaderc-sys fall back
 # to a host build (the crate's build script does not configure CMake for
