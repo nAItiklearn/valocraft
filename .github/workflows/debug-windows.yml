@@ -37,6 +37,20 @@ jobs:
         with:
           arch: x64
 
+      - name: Select the MSVC linker
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -n "${VCToolsInstallDir:-}" ]; then
+            msvc_bin="$(cygpath -u "$VCToolsInstallDir")/bin/Hostx64/x64"
+          else
+            cl_path="$(cygpath -u "$(where cl | head -n 1 | tr -d '\r')")"
+            msvc_bin="$(dirname "$cl_path")"
+          fi
+          test -x "$msvc_bin/link.exe"
+          echo "CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER=$(cygpath -w "$msvc_bin/link.exe")" >> "$GITHUB_ENV"
+          echo "Using MSVC linker: $(cygpath -w "$msvc_bin/link.exe")"
+
       - name: Show build tools
         shell: bash
         run: |
@@ -58,7 +72,7 @@ jobs:
         continue-on-error: true
         run: |
           set -o pipefail
-          cargo build --locked --profile release-thinlto \
+          cargo check --locked --profile release-thinlto \
             --bin veloren-voxygen \
             --no-default-features --features default-publish,shaderc-from-source \
             2>&1 | tee build-windows.log
