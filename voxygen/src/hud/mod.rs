@@ -266,8 +266,11 @@ widget_ids! {
         overheads[],
         overitems[],
 
-        // Game Version
+        // Game Version and performance readout
         version,
+        performance_bg,
+        performance_accent,
+        performance_text,
 
         // Debug
         debug_bg,
@@ -1522,6 +1525,14 @@ impl Hud {
         self.pulse += dt.as_secs_f32();
         // FPS
         let fps = global_state.clock.stats().average_tps;
+        let frame_time_ms = if fps > 0.0 { 1000.0 / fps } else { 0.0 };
+        let fps_color = if fps >= 60.0 {
+            UI_MAIN
+        } else if fps >= 30.0 {
+            LOW_HP_COLOR
+        } else {
+            KILL_COLOR
+        };
         let version = format!("Valocraft {}", *common::util::DISPLAY_VERSION);
         let i18n = &global_state.i18n.read();
 
@@ -2726,6 +2737,24 @@ impl Hud {
                 .position_ingame(*pos)
                 .set(overhead_id, ui_widgets);
             }
+
+            // Compact performance readout. Keep this at the top centre so it
+            // stays readable without covering the minimap on the top right.
+            let performance_text = format!("FPS  {:.0}   {:.1} ms", fps, frame_time_ms);
+            Rectangle::fill([124.0, 22.0])
+                .rgba(0.02, 0.03, 0.04, 0.55)
+                .mid_top_with_margin_on(ui_widgets.window, 18.0)
+                .set(self.ids.performance_bg, ui_widgets);
+            Rectangle::fill([124.0, 2.0])
+                .color(fps_color)
+                .top_left_with_margins_on(self.ids.performance_bg, 0.0, 0.0)
+                .set(self.ids.performance_accent, ui_widgets);
+            Text::new(&performance_text)
+                .color(TEXT_COLOR)
+                .font_id(self.fonts.cyri.conrod_id)
+                .font_size(self.fonts.cyri.scale(11))
+                .middle_of(self.ids.performance_bg)
+                .set(self.ids.performance_text, ui_widgets);
         }
 
         // Display debug window.
