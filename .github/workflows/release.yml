@@ -244,12 +244,14 @@ jobs:
           path: dist
           merge-multiple: true
 
-      - name: Verify at least one package exists
+      - name: Verify required packages exist
         shell: bash
         run: |
           set -euo pipefail
           find dist -maxdepth 1 -type f -printf '%f %s bytes\n' | sort
-          test -n "$(find dist -maxdepth 1 -type f -print -quit)"
+          test -n "$(find dist -maxdepth 1 -type f -iname '*windows*' -print -quit)"
+          test -n "$(find dist -maxdepth 1 -type f -iname '*linux*' -print -quit)"
+          test -n "$(find dist -maxdepth 1 -type f -iname '*macos*aarch64*' -print -quit)"
 
       - name: Publish release
         uses: softprops/action-gh-release@v2
