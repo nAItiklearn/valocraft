@@ -9321,6 +9321,7 @@ dependencies = [
  "mimalloc",
  "mumble-link",
  "native-dialog",
+ "ndk",
  "num 0.4.3",
  "num_cpus",
  "open",

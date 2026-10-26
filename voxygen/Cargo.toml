@@ -8,8 +8,45 @@ default-run = "veloren-voxygen"
 # Uncomment below and comment out default-run if you want to avoid this
 # autobins = false
 
+[lib]
+# Android loads the game as a native shared library.  The rlib is also kept
+# for the desktop binary and for Rust tooling.
+crate-type = ["rlib", "cdylib"]
+
 [lints]
 workspace = true
+
+[package.metadata.android]
+package = "com.valocraft.game"
+build_targets = ["aarch64-linux-android"]
+apk_name = "Valocraft"
+assets = "../assets"
+resources = "android-res"
+strip = "strip"
+
+[package.metadata.android.sdk]
+min_sdk_version = 26
+target_sdk_version = 35
+
+[package.metadata.android.application]
+label = "Valocraft"
+icon = "@mipmap/ic_launcher"
+theme = "@android:style/Theme.DeviceDefault.NoActionBar.Fullscreen"
+extract_native_libs = true
+
+[package.metadata.android.application.activity]
+orientation = "sensorLandscape"
+
+[[package.metadata.android.uses_feature]]
+name = "android.hardware.vulkan.level"
+required = false
+version = 1
+
+[[package.metadata.android.uses_permission]]
+name = "android.permission.INTERNET"
+
+[[package.metadata.android.uses_permission]]
+name = "android.permission.ACCESS_NETWORK_STATE"
 
 [package.metadata.nix]
 build = true
@@ -65,7 +102,7 @@ i18n-helpers = { package = "veloren-voxygen-i18n-helpers", path = "i18n-helpers"
 voxygen-egui = { package = "veloren-voxygen-egui", path = "egui", optional = true }
 
 # Graphics
-winit = { version = "0.30.12", features = ["serde"] }
+winit = { version = "0.30.12", features = ["serde", "android-native-activity"] }
 wgpu = { version = "27", features = ["spirv", "glsl"] }
 wgpu-profiler = "0.25"
 bytemuck = { version = "1.7", features = ["derive"] }
@@ -150,6 +187,11 @@ cpal = "0.18"
 [target.'cfg(target_os = "macos")'.dependencies]
 dispatch = "0.2"
 
+[target.'cfg(target_os = "android")'.dependencies]
+# The winit Android backend re-exports AndroidApp; the ndk crate is used for
+# the asset manager when extracting the bundled game data on first launch.
+ndk = "0.9"
+
 [target.'cfg(target_family = "windows")'.build-dependencies]
 winres = "0.1"
 
@@ -157,7 +199,9 @@ winres = "0.1"
 mimalloc = { workspace = true }
 
 # Mumble
-[target.'cfg(not(target_os="macos"))'.dependencies]
+# Mumble positional audio is a desktop feature; the crate uses POSIX shared
+# memory which Android's libc does not expose.
+[target.'cfg(not(any(target_os="macos", target_os="android")))'.dependencies]
 mumble-link = "0.2.0"
 
 [dev-dependencies]

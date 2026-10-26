@@ -17,6 +17,7 @@ pub mod cmd;
 mod credits;
 #[cfg(feature = "discord")] pub mod discord;
 mod ecs;
+pub mod entry;
 pub mod error;
 pub mod game_input;
 pub mod hud;
@@ -33,6 +34,29 @@ pub mod settings;
 #[cfg(feature = "singleplayer")]
 pub mod singleplayer;
 pub mod window;
+
+#[cfg(target_os = "android")]
+mod mobile;
+#[cfg(target_os = "android")]
+mod mobile_input;
+
+#[cfg(target_os = "android")]
+#[allow(unsafe_code)]
+#[unsafe(no_mangle)]
+pub extern "C" fn android_main(app: winit::platform::android::activity::AndroidApp) {
+    mobile::prepare(&app);
+
+    let event_loop = {
+        use winit::platform::android::EventLoopBuilderExtAndroid;
+        winit::event_loop::EventLoop::builder()
+            .with_android_app(app)
+            .build()
+            .expect("failed to create the Android event loop")
+    };
+
+    let args = <cli::Args as clap::Parser>::parse_from(["Valocraft"]);
+    entry::start(args, Some(event_loop));
+}
 
 /// Valocraft: skip the title/login/server-selection menus and boot directly
 /// into the integrated singleplayer server.

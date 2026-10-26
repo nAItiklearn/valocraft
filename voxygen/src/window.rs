@@ -254,6 +254,8 @@ pub struct Window {
     // saved to file, so initialized here
     pub gamelayer_mod1: bool,
     pub gamelayer_mod2: bool,
+    #[cfg(target_os = "android")]
+    mobile_touch: crate::mobile_input::MobileTouch,
 }
 
 impl Window {
@@ -262,7 +264,19 @@ impl Window {
         runtime: &tokio::runtime::Runtime,
     ) -> Result<(Window, EventLoop), Error> {
         let event_loop = EventLoop::new().unwrap();
+        Self::new_with_event_loop(settings, runtime, event_loop)
+    }
 
+    /// Create the window using an event loop created by the caller.
+    ///
+    /// Android requires the event loop to be built with the `AndroidApp`
+    /// provided by the native activity, so the shared entry point can pass one
+    /// in instead of letting this function call `EventLoop::new`.
+    pub fn new_with_event_loop(
+        settings: &Settings,
+        runtime: &tokio::runtime::Runtime,
+        event_loop: EventLoop,
+    ) -> Result<(Window, EventLoop), Error> {
         let window = settings.graphics.window;
 
         #[allow(unused_mut)] //ensure no weird issues on different platforms
@@ -274,7 +288,15 @@ impl Window {
             ))
             .with_maximized(window.maximised);
 
-        #[cfg(not(any(target_os = "windows", target_os = "macos")))]
+        #[cfg(all(
+            unix,
+            not(any(
+                target_os = "windows",
+                target_os = "macos",
+                target_os = "android",
+                target_os = "ios"
+            ))
+        ))]
         {
             use winit::platform::wayland::WindowAttributesExtWayland;
             attributes = attributes.with_name("net.veloren.veloren", "veloren");
@@ -367,6 +389,8 @@ impl Window {
             toggle_fullscreen: false,
             gamelayer_mod1: true,
             gamelayer_mod2: false,
+            #[cfg(target_os = "android")]
+            mobile_touch: crate::mobile_input::MobileTouch::default(),
         };
 
         this.set_fullscreen_mode(settings.graphics.fullscreen);
@@ -902,6 +926,25 @@ impl Window {
                         * if self.zoom_inversion { -1.0 } else { 1.0 }
                         * DIFFERENCE_FROM_DEVICE_EVENT_ON_X11
                 }))
+            },
+            #[cfg(target_os = "android")]
+            WindowEvent::Touch(touch) => {
+                let size = self.window.inner_size();
+                let scale_factor = self.scale_factor;
+                let cursor_grabbed = self.cursor_grabbed;
+                let menu_open = self.menu_open;
+                let pan_sensitivity = self.pan_sensitivity;
+                let mouse_y_inversion = self.mouse_y_inversion;
+                self.mobile_touch.handle(
+                    touch,
+                    size,
+                    scale_factor,
+                    cursor_grabbed,
+                    menu_open,
+                    pan_sensitivity,
+                    mouse_y_inversion,
+                    &mut self.events,
+                );
             },
             _ => {},
         }

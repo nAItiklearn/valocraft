@@ -1,0 +1,225 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Android release tag, for example android-v0.1.2"
+        required: true
+        default: "android-v0.1.2"
+  push:
+    tags:
+      - "android-v*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build signed arm64 APK
+    runs-on: ubuntu-22.04
+    timeout-minutes: 360
+    steps:
+      - name: Free disk space
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo rm -rf \
+            /usr/share/dotnet \
+            /usr/local/lib/android \
+            /opt/ghc \
+            /opt/hostedtoolcache/CodeQL \
+            /usr/local/share/boost \
+            /usr/local/lib/node_modules
+          docker system prune -af || true
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+          fetch-depth: 1
+
+      - name: Verify real game assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          head -n 1 assets/common/canary.canary | grep -qx "VELOREN_CANARY_MAGIC"
+          test "$(stat -c%s assets/voxygen/texture/noise.png)" -gt 1000
+
+      - name: Install Rust toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup show
+          rustup target add aarch64-linux-android
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android build tools and NDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          yes | sdkmanager --licenses >/dev/null
+          sdkmanager \
+            "platform-tools" \
+            "platforms;android-35" \
+            "build-tools;35.0.0" \
+            "ndk;27.2.12479018"
+          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
+          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/27.2.12479018" >> "$GITHUB_ENV"
+          echo "$ANDROID_SDK_ROOT/build-tools/35.0.0" >> "$GITHUB_PATH"
+          echo "$ANDROID_SDK_ROOT/platform-tools" >> "$GITHUB_PATH"
+
+      - name: Install native build tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends cmake ninja-build
+          cmake --version
+          ninja --version
+
+      - name: Install cargo-apk
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo install cargo-apk --version 0.10.0 --locked
+
+      - name: Configure signing
+        shell: bash
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/.android"
+          if [ -n "${ANDROID_KEYSTORE_BASE64:-}" ]; then
+            echo "Using the configured Android release keystore."
+            echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$HOME/.android/valocraft-release.keystore"
+            echo "CARGO_APK_RELEASE_KEYSTORE=$HOME/.android/valocraft-release.keystore" >> "$GITHUB_ENV"
+            echo "CARGO_APK_RELEASE_KEYSTORE_PASSWORD=$ANDROID_KEYSTORE_PASSWORD" >> "$GITHUB_ENV"
+            echo "ANDROID_KEY_ALIAS=${ANDROID_KEY_ALIAS:-valocraft}" >> "$GITHUB_ENV"
+          else
+            echo "No Android release keystore secret is configured; using a debug key for sideload testing."
+            keytool -genkeypair \
+              -keystore "$HOME/.android/debug.keystore" \
+              -storepass android \
+              -keypass android \
+              -alias androiddebugkey \
+              -dname "CN=Android Debug,O=Android,C=US" \
+              -keyalg RSA \
+              -validity 10000 \
+              -noprompt
+            echo "CARGO_APK_RELEASE_KEYSTORE=$HOME/.android/debug.keystore" >> "$GITHUB_ENV"
+            echo "CARGO_APK_RELEASE_KEYSTORE_PASSWORD=android" >> "$GITHUB_ENV"
+          fi
+
+      - name: Build APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./scripts/build_android.sh
+
+      - name: Verify APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          apk=target-android/release/apk/Valocraft.apk
+          test -f "$apk"
+          apksigner verify --verbose "$apk"
+          aapt dump badging "$apk" | tee badging.txt
+          grep -q "package: name='com.valocraft.game'" badging.txt
+          grep -q "native-code: 'arm64-v8a'" badging.txt
+          unzip -p "$apk" assets/common/canary.canary | grep -qx "VELOREN_CANARY_MAGIC"
+          mkdir -p dist
+          version="${{ inputs.release_tag || github.ref_name }}"
+          version="${version#android-}"
+          cp "$apk" "dist/Valocraft-${version}-android-arm64.apk"
+          sha256sum dist/*.apk > dist/SHA256SUMS.txt
+          ls -lh dist
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Valocraft-Android
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    name: Publish Android release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/android-v') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download APK
+        uses: actions/download-artifact@v4
+        with:
+          name: Valocraft-Android
+          path: dist
+
+      - name: Publish release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.release_tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+          cat > release-notes.md <<'EOF'
+          ## Valocraft Android (experimental)
+
+          This is an **arm64-v8a** Android build for Android 8.0 (API 26) and
+          newer. It contains the complete game assets and runs the offline
+          singleplayer world on the device.
+
+          - Download the `.apk` below and allow installation from your browser
+            or file manager.
+          - The first launch extracts about 524 MB into the app's internal
+            storage. Keep at least 1.5 GB free.
+          - Controls: lower-left joystick moves; drag the upper/right area to
+            look; tap to attack; lower-right buttons jump and attack; top-left
+            opens the menu; top-right opens inventory/map.
+          - This build is signed with a debug key for sideload testing. It is
+            not Play Store ready. A public build needs a dedicated signing key.
+
+          The APK is experimental and has not yet been tested on every phone.
+          Desktop downloads are in the separate
+          [`v0.1.2`](https://github.com/nAItiklearn/valocraft/releases/tag/v0.1.2)
+          release. iPhone installation is not available: it requires Apple
+          signing and a Mac.
+
+          See [`MOBILE.md`](https://github.com/nAItiklearn/valocraft/blob/android-port/MOBILE.md)
+          for build details and known limitations.
+          EOF
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/* --clobber
+            gh release edit "$TAG" --title "Valocraft Android $TAG" --notes-file release-notes.md
+          else
+            gh release create "$TAG" dist/* \
+              --title "Valocraft Android $TAG" \
+              --notes-file release-notes.md \
+              --target "$GITHUB_SHA"
+          fi
+
+      - name: Verify published asset
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.release_tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+          gh release view "$TAG" --json assets --jq '.assets[].name' | tee assets.txt
+          grep -qi 'android.*arm64.*apk' assets.txt
