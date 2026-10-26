@@ -45,6 +45,8 @@ jobs:
           set -euo pipefail
           head -n 1 assets/common/canary.canary | grep -qx "VELOREN_CANARY_MAGIC"
           test -f assets/voxygen/logo.ico
+          test -f assets/voxygen/logo-windows.ico
+          test "$(wc -c < assets/voxygen/logo-windows.ico)" -gt 1000
 
       - name: Archive assets for the build jobs
         shell: bash
@@ -254,29 +256,69 @@ jobs:
           test -n "$(find dist -maxdepth 1 -type f -iname '*macos*aarch64*' -print -quit)"
 
       - name: Publish release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ inputs.tag || github.ref_name }}
-          name: Valocraft ${{ inputs.tag || github.ref_name }}
-          target_commitish: ${{ github.sha }}
-          prerelease: ${{ inputs.prerelease || false }}
-          fail_on_unmatched_files: true
-          body: |
-            ## Valocraft desktop release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag || github.ref_name }}
+          PRERELEASE: ${{ inputs.prerelease || false }}
+        run: |
+          set -euo pipefail
+          cat > release-notes.md <<'EOF'
+          ## Valocraft desktop release
 
-            This release contains the portable desktop client and the optional
-            dedicated server for the platforms that built successfully.
+          This release contains the portable desktop client and the optional
+          dedicated server for the required platforms.
 
-            - **Windows:** extract the `.zip`, then run `run.bat`.
-            - **macOS:** open the `.dmg` and drag Valocraft to Applications, or
-              extract the `.tar.gz`. The build is unsigned; right-click the app
-              and choose **Open** the first time.
-            - **Linux:** extract the `.tar.gz`, then run `./run.sh`.
+          - **Windows:** extract the `.zip`, then run `run.bat`.
+          - **macOS:** open the `.dmg` and drag Valocraft to Applications, or
+            extract the `.tar.gz`. The build is unsigned; right-click the app
+            and choose **Open** the first time.
+          - **Linux:** extract the `.tar.gz`, then run `./run.sh`.
 
-            The full platform notes, runtime packages, build instructions, and
-            troubleshooting steps are in [`RUNNING.md`](https://github.com/nAItiklearn/valocraft/blob/main/RUNNING.md).
+          The full platform notes, runtime packages, build instructions, and
+          troubleshooting steps are in [`RUNNING.md`](https://github.com/nAItiklearn/valocraft/blob/main/RUNNING.md).
 
-            Android and iOS are not available yet. See
-            [`MOBILE.md`](https://github.com/nAItiklearn/valocraft/blob/main/MOBILE.md)
-            for the porting plan.
-          files: dist/*
+          Android and iOS are not available yet. See
+          [`MOBILE.md`](https://github.com/nAItiklearn/valocraft/blob/main/MOBILE.md)
+          for the porting plan.
+          EOF
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/* --clobber
+            gh release edit "$TAG" --title "Valocraft $TAG" --notes-file release-notes.md
+          else
+            create_args=(
+              --title "Valocraft $TAG"
+              --notes-file release-notes.md
+              --target "$GITHUB_SHA"
+            )
+            if [ "$PRERELEASE" = "true" ]; then
+              create_args+=(--prerelease)
+            fi
+            gh release create "$TAG" dist/* "${create_args[@]}"
+          fi
+
+      - name: Verify published release assets
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+          gh release view "$TAG" --json assets --jq '.assets[].name' | tee published-assets.txt
+          grep -qi 'windows' published-assets.txt
+          grep -qi 'linux' published-assets.txt
+          grep -qi 'macos.*aarch64' published-assets.txt
+
+      - name: Remove stale empty releases
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+          for old in v0.1.0 v0.1.1; do
+            if [ "$old" != "$TAG" ]; then
+              gh release delete "$old" --yes 2>/dev/null || true
+            fi
+          done
