@@ -84,6 +84,7 @@ nix/result*
 
 ## Rust
 target
+/target-*/
 
 
 # Shell extensions

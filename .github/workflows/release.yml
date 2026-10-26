@@ -156,6 +156,23 @@ jobs:
         with:
           arch: x64
 
+      - name: Select the MSVC linker
+        if: matrix.platform == 'windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Git for Windows puts a Unix `link.exe` in /usr/bin.  Rust must use
+          # the MSVC linker from the Visual Studio toolchain, not that one.
+          if [ -n "${VCToolsInstallDir:-}" ]; then
+            msvc_bin="$(cygpath -u "$VCToolsInstallDir")/bin/Hostx64/x64"
+          else
+            cl_path="$(cygpath -u "$(where cl | head -n 1 | tr -d '\r')")"
+            msvc_bin="$(dirname "$cl_path")"
+          fi
+          test -x "$msvc_bin/link.exe"
+          echo "CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER=$(cygpath -w "$msvc_bin/link.exe")" >> "$GITHUB_ENV"
+          echo "Using MSVC linker: $(cygpath -w "$msvc_bin/link.exe")"
+
       - name: Build client
         shell: bash
         env:
@@ -227,12 +244,14 @@ jobs:
           path: dist
           merge-multiple: true
 
-      - name: Verify at least one package exists
+      - name: Verify required packages exist
         shell: bash
         run: |
           set -euo pipefail
           find dist -maxdepth 1 -type f -printf '%f %s bytes\n' | sort
-          test -n "$(find dist -maxdepth 1 -type f -print -quit)"
+          test -n "$(find dist -maxdepth 1 -type f -iname '*windows*' -print -quit)"
+          test -n "$(find dist -maxdepth 1 -type f -iname '*linux*' -print -quit)"
+          test -n "$(find dist -maxdepth 1 -type f -iname '*macos*aarch64*' -print -quit)"
 
       - name: Publish release
         uses: softprops/action-gh-release@v2
