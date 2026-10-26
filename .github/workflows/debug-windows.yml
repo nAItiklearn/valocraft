@@ -1,0 +1,84 @@
+name: Debug Windows build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - ci-debug
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    name: Debug Windows client build
+    runs-on: windows-2022
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: false
+          fetch-depth: 1
+
+      - name: Install Rust toolchain
+        run: rustup show
+
+      - name: Install CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: "3.31.8"
+
+      - name: Install Ninja
+        run: choco install ninja -y --no-progress
+
+      - name: Set up MSVC developer environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Show build tools
+        shell: bash
+        run: |
+          set -x
+          cargo --version
+          rustc --version
+          cmake --version
+          ninja --version
+          python --version
+          git --version
+          where cl || true
+          where cmake || true
+          where ninja || true
+          where python || true
+          where git || true
+
+      - name: Build client with captured log
+        shell: bash
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          cargo build --locked --profile release-thinlto \
+            --bin veloren-voxygen \
+            --no-default-features --features default-publish,shaderc-from-source \
+            2>&1 | tee build-windows.log
+
+      - name: Publish build log
+        if: always()
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p ci-logs
+          {
+            echo "run: $GITHUB_RUN_ID"
+            echo "sha: $GITHUB_SHA"
+            echo
+            tail -n 600 build-windows.log || true
+          } > ci-logs/windows-build.log
+          git config user.name "Valocraft CI"
+          git config user.email "ci@users.noreply.github.com"
+          git add ci-logs/windows-build.log
+          git commit -m "Capture Windows CI log" || true
+          git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:ci-logs --force
