@@ -10,6 +10,27 @@ server.
 > **Status:** alpha / active development. Expect bugs, unfinished systems, and
 > changing balance.
 
+## Download
+
+Prebuilt desktop builds are published on the
+[Releases](https://github.com/nAItiklearn/valocraft/releases) page.
+
+| Platform | Download | Launcher |
+|---|---|---|
+| Windows 10/11 (x86_64) | `.zip` | `run.bat` |
+| macOS (Apple Silicon) | `.dmg` / `.tar.gz` | `Valocraft.app` |
+| macOS (Intel) | `.dmg` / `.tar.gz` | `Valocraft.app` |
+| Linux (x86_64) | `.tar.gz` | `./run.sh` |
+
+Each archive is self-contained: it includes the client, the optional dedicated
+server, all game assets, and the player documentation. Extract the whole archive
+and use the launcher inside it. Platform-specific runtime packages, Gatekeeper
+notes, and troubleshooting are in [`RUNNING.md`](RUNNING.md).
+
+> **Mobile:** Android and iPhone/iPad builds are not available yet. The current
+> client uses keyboard/mouse controls and a desktop UI. See [`MOBILE.md`](MOBILE.md)
+> for the porting plan and the iOS signing requirements.
+
 ---
 
 ## Features
@@ -115,20 +136,22 @@ All bindings can be changed in **Settings → Controls**.
 
 ### Play
 
-1. Launch the client executable from the build output directory (`target/release/`);
-   it is the executable that opens the game window.
-2. The client boots directly into a local offline singleplayer world as the profile
-   `Player`.
+1. Download a release archive or build the client from source (see below).
+2. Extract the archive completely and launch `run.bat`, `Valocraft.app`, or
+   `./run.sh`. The client boots directly into a local offline singleplayer world
+   as the profile `Player`.
 3. On first launch, a world and character are created automatically.
 
 No account, internet connection, or server setup is required for local play.
+The full per-platform instructions are in [`RUNNING.md`](RUNNING.md).
 
 ### Multiplayer
 
-Start a dedicated server, then connect from the client's multiplayer menu. The first
-launch auto-boots into singleplayer; log out to the main menu to use the multiplayer
-browser. Public servers may require an account; local and private servers can run
-without authentication.
+Start the dedicated server (`run-server.bat`, `ValocraftServer`, or
+`run-server.sh`), then connect from the client's multiplayer menu. The first
+launch auto-boots into singleplayer; log out to the main menu to use the
+multiplayer browser. Public servers may require an account; local and private
+servers can run without authentication.
 
 ---
 
@@ -137,19 +160,23 @@ without authentication.
 Requirements:
 - Rust (the pinned toolchain is declared in `rust-toolchain`)
 - Git LFS (large game assets are stored with Git LFS)
+- CMake and Ninja (the default build compiles the shader compiler)
 - A supported graphics backend (Vulkan, OpenGL, or Metal)
-- Platform build tools for your OS (this checkout is verified on Linux)
+- Platform build tools for your OS (see [`RUNNING.md`](RUNNING.md))
 
 ```bash
 git lfs install
 git lfs pull
-cargo build --release
+cargo build --release --workspace
 ```
 
 If you cloned before installing Git LFS, run `git lfs pull` to fetch the assets.
-Launch the generated client executable from `target/release/`. For the exact
-feature flags and local toolchain workarounds used in this checkout, see
-[`CODEBASE_INDEX.md`](CODEBASE_INDEX.md).
+Launch the client from `target/release/`. Platform-specific packages, targeted
+build commands, Windows Visual Studio requirements, the macOS toolchain, Linux
+runtime libraries, and the verified local system-shaderc workaround are
+documented in [`RUNNING.md`](RUNNING.md) and
+[`CODEBASE_INDEX.md`](CODEBASE_INDEX.md). Maintainers can create a downloadable
+release with [`RELEASING.md`](RELEASING.md).
 
 ---
 
@@ -159,7 +186,8 @@ feature flags and local toolchain workarounds used in this checkout, see
   recipes. See [`VOXEL_BUILDING_PLAN.md`](VOXEL_BUILDING_PLAN.md).
 - More adventure content, dungeons, quests, and world events.
 - Continued combat, crafting, and progression balance.
-- Further rebranding, UI polish, and packaging work.
+- More UI polish, accessibility, and desktop packaging.
+- Android and iOS ports (see [`MOBILE.md`](MOBILE.md)).
 
 ---
 

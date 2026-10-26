@@ -1,0 +1,263 @@
+name: Build desktop release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag, for example v0.1.0"
+        required: true
+        default: "v0.1.0"
+      prerelease:
+        description: "Mark the GitHub Release as a prerelease"
+        type: boolean
+        default: true
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+  # Portable release layout: userdata is created beside the executable.
+  VELOREN_USERDATA_STRATEGY: executable
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  prepare-assets:
+    name: Prepare game assets
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+          fetch-depth: 1
+
+      - name: Verify assets are not LFS pointers
+        shell: bash
+        run: |
+          set -euo pipefail
+          head -n 1 assets/common/canary.canary | grep -qx "VELOREN_CANARY_MAGIC"
+          test -f assets/voxygen/logo.ico
+
+      - name: Archive assets for the build jobs
+        shell: bash
+        run: |
+          set -euo pipefail
+          tar -czf valocraft-assets.tar.gz assets
+
+      - name: Upload prepared assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: valocraft-assets
+          path: valocraft-assets.tar.gz
+          if-no-files-found: error
+          retention-days: 2
+
+  build:
+    name: ${{ matrix.name }}
+    needs: prepare-assets
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 360
+    continue-on-error: ${{ matrix.optional || false }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux x86_64
+            os: ubuntu-22.04
+            platform: linux
+            arch: x86_64
+            profile: release-thinlto
+            python: python3
+            macos_target: ""
+            optional: false
+          - name: Windows x86_64
+            os: windows-2022
+            platform: windows
+            arch: x86_64
+            profile: release-thinlto
+            python: python
+            macos_target: ""
+            optional: false
+          - name: macOS Apple Silicon
+            os: macos-15
+            platform: macos
+            arch: aarch64
+            profile: release-thinlto
+            python: python3
+            macos_target: "11.0"
+            optional: false
+          - name: macOS Intel
+            os: macos-15-intel
+            platform: macos
+            arch: x86_64
+            profile: release-thinlto
+            python: python3
+            macos_target: "10.15"
+            optional: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: false
+          fetch-depth: 1
+
+      - name: Download prepared assets
+        uses: actions/download-artifact@v4
+        with:
+          name: valocraft-assets
+          path: .
+
+      - name: Restore prepared assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf assets
+          tar -xzf valocraft-assets.tar.gz
+
+      - name: Install Rust toolchain
+        run: rustup show
+
+      - name: Install CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: "3.31.8"
+
+      - name: Install Linux build dependencies
+        if: matrix.platform == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential pkg-config clang lld ninja-build \
+            libasound2-dev libudev-dev libx11-dev libxcursor-dev \
+            libxrandr-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev \
+            libwayland-dev libvulkan-dev libgl1-mesa-dev libegl1-mesa-dev \
+            libssl-dev libsqlite3-dev
+
+      - name: Install macOS Ninja
+        if: matrix.platform == 'macos'
+        run: brew install ninja
+
+      - name: Install Windows Ninja
+        if: matrix.platform == 'windows'
+        run: choco install ninja -y --no-progress
+
+      - name: Set up MSVC developer environment
+        if: matrix.platform == 'windows'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Build client
+        shell: bash
+        env:
+          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macos_target }}
+        run: |
+          set -euo pipefail
+          cargo build --locked --profile "${{ matrix.profile }}" \
+            --bin veloren-voxygen \
+            --no-default-features --features default-publish,shaderc-from-source
+
+      - name: Build dedicated server
+        shell: bash
+        env:
+          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macos_target }}
+        run: |
+          set -euo pipefail
+          cargo build --locked --profile "${{ matrix.profile }}" \
+            --bin veloren-server-cli
+
+      - name: Stage binaries and free build space
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .release-bin
+          if [ "${{ matrix.platform }}" = "windows" ]; then
+            cp "target/${{ matrix.profile }}/veloren-voxygen.exe" .release-bin/
+            cp "target/${{ matrix.profile }}/veloren-server-cli.exe" .release-bin/
+          else
+            cp "target/${{ matrix.profile }}/veloren-voxygen" .release-bin/
+            cp "target/${{ matrix.profile }}/veloren-server-cli" .release-bin/
+          fi
+          rm -rf target
+
+      - name: Package
+        shell: bash
+        run: |
+          set -euo pipefail
+          "${{ matrix.python }}" scripts/package_release.py \
+            --platform "${{ matrix.platform }}" \
+            --arch "${{ matrix.arch }}" \
+            --version "${{ inputs.tag || github.ref_name }}" \
+            --binary-dir .release-bin \
+            --out-dir dist
+
+      - name: Show package sizes
+        shell: bash
+        run: |
+          set -euo pipefail
+          ls -lh dist
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Valocraft-${{ matrix.platform }}-${{ matrix.arch }}
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 2
+
+  release:
+    name: Publish GitHub Release
+    needs: build
+    if: always() && (github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: Valocraft-*
+          path: dist
+          merge-multiple: true
+
+      - name: Verify at least one package exists
+        shell: bash
+        run: |
+          set -euo pipefail
+          find dist -maxdepth 1 -type f -printf '%f %s bytes\n' | sort
+          test -n "$(find dist -maxdepth 1 -type f -print -quit)"
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag || github.ref_name }}
+          name: Valocraft ${{ inputs.tag || github.ref_name }}
+          target_commitish: ${{ github.sha }}
+          prerelease: ${{ inputs.prerelease || false }}
+          fail_on_unmatched_files: true
+          body: |
+            ## Valocraft desktop release
+
+            This release contains the portable desktop client and the optional
+            dedicated server for the platforms that built successfully.
+
+            - **Windows:** extract the `.zip`, then run `run.bat`.
+            - **macOS:** open the `.dmg` and drag Valocraft to Applications, or
+              extract the `.tar.gz`. The build is unsigned; right-click the app
+              and choose **Open** the first time.
+            - **Linux:** extract the `.tar.gz`, then run `./run.sh`.
+
+            The full platform notes, runtime packages, build instructions, and
+            troubleshooting steps are in [`RUNNING.md`](https://github.com/nAItiklearn/valocraft/blob/main/RUNNING.md).
+
+            Android and iOS are not available yet. See
+            [`MOBILE.md`](https://github.com/nAItiklearn/valocraft/blob/main/MOBILE.md)
+            for the porting plan.
+          files: dist/*

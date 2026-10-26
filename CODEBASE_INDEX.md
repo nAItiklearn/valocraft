@@ -1,7 +1,7 @@
-# Veloren Workspace Index
+# Valocraft Workspace Index
 
-Local checkout: `/home/naitik/Projects/valocraft`
-Upstream: <https://gitlab.com/veloren/veloren.git>
+Checkout: this repository's workspace root
+Snapshot: Valocraft `main`
 Workspace version: `0.18.0` · Rust edition `2024` · resolver `2`
 Pinned toolchain: `nightly-2026-06-13` (from `rust-toolchain`)
 
@@ -235,7 +235,7 @@ hot-reloadable where the feature is enabled.
 Toolchain is pinned by `rust-toolchain` → `nightly-2026-06-13`.
 
 ```bash
-cd /home/naitik/Projects/valocraft
+cd <repo>
 export PATH="$HOME/.cargo/bin:$PATH"
 
 # Client (default feature set; requires cmake + mold, or use the local workaround below)
@@ -252,7 +252,7 @@ cargo build --release --bin veloren-server-cli
 
 Launch:
 ```bash
-cd /home/naitik/Projects/valocraft
+cd <repo>
 
 # Valocraft client: auto-boots into the integrated singleplayer server as the
 # offline profile "Player". On first run it creates a world and character
@@ -283,10 +283,9 @@ cd /home/naitik/Projects/valocraft
 
 Build & runtime status (verified 2026-10-26):
 - **Assets:** the checkout originally contained 6,375 Git LFS pointer files (the canary
-  asset correctly aborted the client). The full content was restored from the local
-  Airshipper profile at
-  `/home/naitik/.local/share/airshipper/profiles/default/assets`; every file was
-  SHA-256-verified against its LFS pointer OID before copying. `assets/` is now 443 MB
+  asset correctly aborted the client). The full content was restored from a
+  verified local game profile; every file was SHA-256-verified against its LFS
+  pointer OID before copying. `assets/` is now 443 MB
   with **0 remaining pointers** and a valid `VELOREN_CANARY_MAGIC` canary.
 - `target/release/veloren-voxygen` — 259 MB, built 20:06, `ldd` clean, `--help` OK.
   Built with the system-shaderc workaround feature set:
@@ -314,3 +313,46 @@ Local notes / deviations:
   ```
   Install `cmake` (`sudo pacman -S cmake`) and `mold` (`sudo pacman -S mold`) to
   restore the stock toolchain end-to-end.
+
+---
+
+## 8. Desktop releases and mobile status
+
+### Desktop release pipeline
+
+- `.github/workflows/release.yml` builds Linux x86_64, Windows x86_64, macOS
+  Apple Silicon, and macOS Intel packages. It runs on `workflow_dispatch` or a
+  `v*` tag.
+- A `prepare-assets` job checks out the LFS assets once, verifies the canary, and
+  shares a `valocraft-assets.tar.gz` Actions artifact with the platform jobs. The
+  build jobs checkout without LFS and restore that archive, avoiding one LFS
+  download per runner.
+- `scripts/package_release.py` produces the self-contained archives:
+  - Linux: `.tar.gz` with `Valocraft`, `ValocraftServer`, `assets/`, launchers,
+    and documentation.
+  - Windows: `.zip` with `.exe` binaries, `assets/`, and `.bat` launchers.
+  - macOS: `Valocraft.app` inside a `.tar.gz` and a `.dmg`, with assets in
+    `Contents/Resources/assets` and a shell wrapper for the environment.
+- Release builds use `release-thinlto` and:
+  - client: `--no-default-features --features default-publish,shaderc-from-source`
+  - server: the default `veloren-server-cli` feature set
+- The CI installs the pinned nightly via `rustup`, CMake 3.31.8, Ninja, and the
+  platform build dependencies. `VELOREN_USERDATA_STRATEGY=executable` keeps the
+  packages portable.
+- `RUNNING.md` is the player-facing per-platform guide (download, runtime
+  packages, Gatekeeper, Windows VC++ runtime, source build, troubleshooting).
+- `RELEASING.md` documents the tag/manual-dispatch process and post-run checks.
+- The workflow is new; the first real tag build should be treated as a CI smoke
+  test and its platform logs reviewed before announcing downloads broadly.
+
+### Mobile
+
+- Android and iOS are **not supported yet**. There is no mobile entry point,
+  touch-control layout, mobile storage integration, or signed mobile package.
+- `MOBILE.md` records the blockers and a phased porting plan.
+- Android is the more tractable first target: `winit`/`wgpu` have Android
+  backends, but the app needs `android_main`, NDK packaging, asset extraction,
+  touch controls, lifecycle handling, and performance presets.
+- iOS additionally needs an Xcode target, Apple signing certificates, and a
+  paid Apple Developer account for any broadly installable IPA.
+- Do not market the desktop archives as mobile-ready.
