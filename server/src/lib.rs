@@ -547,7 +547,7 @@ impl Server {
             state
                 .ecs()
                 .write_resource::<AreasContainer<BuildArea>>()
-                .insert("world".to_string(), world_aabb)
+                .insert(events::building::WORLD_BUILD_AREA.to_string(), world_aabb)
                 .expect("The initial insert should always work.");
         }
 

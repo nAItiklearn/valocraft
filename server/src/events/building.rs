@@ -20,7 +20,9 @@ use common::{
         item::{
             BuildFailedReason, BuildingBlock, Item, ItemDefinitionId, ItemDesc, ItemKind,
             MaterialStatManifest,
-            building::{SURVIVAL_BUILD_REACH, SURVIVAL_BUILD_REACH_TOLERANCE},
+            building::{
+                SURVIVAL_BUILD_REACH, SURVIVAL_BUILD_REACH_TOLERANCE, is_disposable_sprite,
+            },
         },
         loot_owner::{LootOwnerKind, ONWERSHIP_TIMEOUT_FAST},
         tool::{AbilityMap, ToolKind},
@@ -28,7 +30,7 @@ use common::{
     event::{CreateItemDropEvent, EventBus, SurvivalBuildAction, SurvivalBuildEvent},
     outcome::Outcome,
     resources::ProgramTime,
-    terrain::{Block, TerrainGrid},
+    terrain::{Block, SpriteKind, TerrainGrid},
     uid::Uid,
     util::{
         Dir,
@@ -36,11 +38,11 @@ use common::{
     },
     vol::ReadVol,
 };
-use common_state::BlockChange;
+use common_state::{AreasContainer, BlockChange, BuildArea};
 #[cfg(feature = "persistent_world")]
 use specs::Write;
 use specs::{
-    DispatcherBuilder, ReadExpect, ReadStorage, SystemData, WriteExpect, WriteStorage, shred,
+    DispatcherBuilder, Read, ReadExpect, ReadStorage, SystemData, WriteExpect, WriteStorage, shred,
 };
 use tracing::{debug, error};
 use vek::*;
@@ -63,6 +65,7 @@ const TOOL_SLOTS: [EquipSlot; 4] = [
 pub struct SurvivalBuildData<'a> {
     block_change: WriteExpect<'a, BlockChange>,
     terrain: ReadExpect<'a, TerrainGrid>,
+    build_areas: Read<'a, AreasContainer<BuildArea>>,
     #[cfg(feature = "persistent_world")]
     terrain_persistence: Option<Write<'a, TerrainPersistence>>,
     #[cfg(feature = "worldgen")]
@@ -87,13 +90,31 @@ pub struct SurvivalBuildData<'a> {
 }
 
 impl SurvivalBuildData<'_> {
+    /// Whether survival edits at `pos` are forbidden: creative build areas
+    /// belong to whoever was permitted to build there, and generated sites
+    /// keep their structures.
+    fn is_protected(&self, pos: Vec3<i32>) -> bool { self.in_build_area(pos) || self.in_site(pos) }
+
+    fn in_build_area(&self, pos: Vec3<i32>) -> bool {
+        self.build_areas
+            .area_metas()
+            .iter()
+            // The reserved "world" area covers the whole map, so that admins
+            // can be permitted to build anywhere. It doesn't claim any land.
+            .filter(|(name, _)| name.as_str() != WORLD_BUILD_AREA)
+            .filter_map(|(_, id)| self.build_areas.areas().get(*id))
+            // Matches the inclusive check of creative building in
+            // `sys::msg::in_game`.
+            .any(|aabb| aabb.contains_point(pos))
+    }
+
     /// Whether `pos` belongs to a generated site (settlement, dungeon, ...).
     ///
-    /// Every non-empty site tile is protected, plus a margin of one tile so
+    /// Every tile the site built on is protected, plus a margin of one tile so
     /// that walls and building edges that slightly overhang their tile are
     /// covered as well. Positions outside of the world are always protected.
     #[cfg(feature = "worldgen")]
-    fn is_protected(&self, pos: Vec3<i32>) -> bool {
+    fn in_site(&self, pos: Vec3<i32>) -> bool {
         let wpos = pos.xy();
         let Some(chunk) = self.world.sim().get_wpos(wpos) else {
             return true;
@@ -101,12 +122,14 @@ impl SurvivalBuildData<'_> {
         chunk.sites.iter().any(|site_id| {
             let site = &self.index.sites[*site_id];
             let tpos = site.wpos_tile_pos(wpos);
-            (-1..=1).any(|x| (-1..=1).any(|y| !site.tiles.get(tpos + Vec2::new(x, y)).is_empty()))
+            (-1..=1).any(|x| {
+                (-1..=1).any(|y| is_built_tile(&site.tiles.get(tpos + Vec2::new(x, y)).kind))
+            })
         })
     }
 
     #[cfg(not(feature = "worldgen"))]
-    fn is_protected(&self, _pos: Vec3<i32>) -> bool { false }
+    fn in_site(&self, _pos: Vec3<i32>) -> bool { false }
 
     /// Whether the editor's eyes are close enough to the centre of `pos`.
     fn in_reach(&self, entity: specs::Entity, pos: Vec3<i32>) -> bool {
@@ -195,14 +218,19 @@ impl SurvivalBuildData<'_> {
             return self.fail(entity, pos, BuildFailedReason::RequiresTool(tool));
         }
 
-        // A sprite resting on top of this block loses its support. Decorative
-        // ones (grass, flowers, ...) are removed with it, but anything that
-        // holds items or can be interacted with has to be dealt with first.
+        // A sprite resting on top of this block loses its support. Decoration
+        // (grass, ...) is removed with it, anything else has to be dealt with
+        // first. The removal is written here rather than left to the generic
+        // unsupported sprite cleanup so that it is persisted as well.
         let above_pos = pos + Vec3::unit_z();
-        let above = self.terrain.get(above_pos).ok().copied();
-        let supported_sprite = above.filter(|b| b.is_fluid() && b.get_sprite().is_some());
+        let supported_sprite = self
+            .terrain
+            .get(above_pos)
+            .ok()
+            .copied()
+            .filter(|b| b.is_fluid() && b.get_sprite().is_some_and(|s| s != SpriteKind::Empty));
         if let Some(above) = supported_sprite
-            && is_important_sprite(above)
+            && !is_disposable_sprite(above)
         {
             return self.fail(entity, pos, BuildFailedReason::Obstructed);
         }
@@ -275,7 +303,7 @@ impl SurvivalBuildData<'_> {
         let Some(old_block) = self.terrain.get(pos).ok().copied() else {
             return;
         };
-        if !old_block.is_fluid() || is_important_sprite(old_block) || self.is_occupied(pos) {
+        if !old_block.is_fluid() || !is_disposable_sprite(old_block) || self.is_occupied(pos) {
             return self.fail(entity, pos, BuildFailedReason::Obstructed);
         }
 
@@ -318,13 +346,20 @@ impl SurvivalBuildData<'_> {
     }
 }
 
-/// Sprites that must not be destroyed as a side effect of a block edit:
-/// anything that can be collected, stores items or is a door.
-fn is_important_sprite(block: Block) -> bool {
-    block.is_collectible()
-        || block
-            .get_sprite()
-            .is_some_and(|s| s.is_defined_as_container() || s.is_door())
+/// Name of the build area that `Server::new` creates over the whole world.
+pub(crate) const WORLD_BUILD_AREA: &str = "world";
+
+/// Whether a site tile holds something the site built. Sites also mark the
+/// natural terrain around them, up to a few hundred blocks away, as hazards
+/// (steep slopes, water) and overland paths so that they don't build there;
+/// that terrain stays free for survival building.
+#[cfg(feature = "worldgen")]
+fn is_built_tile(kind: &world::site::TileKind) -> bool {
+    use world::site::TileKind;
+    !matches!(
+        kind,
+        TileKind::Empty | TileKind::Hazard(_) | TileKind::Path { .. }
+    )
 }
 
 impl ServerEvent for SurvivalBuildEvent {

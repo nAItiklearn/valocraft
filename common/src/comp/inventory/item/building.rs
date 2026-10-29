@@ -13,7 +13,7 @@
 
 use crate::{
     comp::tool::ToolKind,
-    terrain::{Block, BlockKind},
+    terrain::{Block, BlockKind, SpriteKind},
 };
 use serde::{Deserialize, Serialize};
 use strum::{EnumIter, IntoEnumIterator};
@@ -47,6 +47,9 @@ pub enum BuildingBlock {
 }
 
 impl BuildingBlock {
+    /// Every building block, in declaration order.
+    pub fn all() -> impl Iterator<Item = Self> { Self::iter() }
+
     /// The voxel written into the world when this block is placed.
     pub const fn block(self) -> Block {
         let (kind, [r, g, b]) = match self {
@@ -134,6 +137,28 @@ impl BuildingBlock {
     }
 }
 
+/// Whether a survival block edit may destroy the sprite in `block` (if any) as
+/// a side effect, either by placing into its voxel or by removing the block it
+/// rests on. Only plain decoration such as grass may go: anything with
+/// collision, contents, an interaction or a yield (collectibles, ores,
+/// containers, doors, seats and beds, crafting stations, ...) has to be dealt
+/// with first.
+pub fn is_disposable_sprite(block: Block) -> bool {
+    match block.get_sprite() {
+        None | Some(SpriteKind::Empty) => true,
+        Some(sprite) => {
+            sprite.solid_height().is_none()
+                && block.explode_power().is_some()
+                && !block.is_collectible()
+                && sprite.mine_tool().is_none()
+                && !sprite.is_defined_as_container()
+                && !sprite.is_door()
+                && !sprite.is_mountable()
+                && !sprite.is_controller()
+        },
+    }
+}
+
 /// Why the server refused a survival block edit. Sent back to the editing
 /// client so the HUD can explain what happened.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -156,7 +181,33 @@ pub enum BuildFailedReason {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::terrain::SpriteKind;
+
+    #[test]
+    fn only_decoration_is_disposable() {
+        for disposable in [
+            Block::empty(),
+            Block::air(SpriteKind::Empty),
+            Block::water(SpriteKind::Empty),
+            Block::air(SpriteKind::LongGrass),
+            Block::air(SpriteKind::ShortGrass),
+            // Not collectible (no loot).
+            Block::air(SpriteKind::BlueFlower),
+            BuildingBlock::Dirt.block(),
+        ] {
+            assert!(is_disposable_sprite(disposable), "{disposable:?}");
+        }
+        for kept in [
+            SpriteKind::RedFlower,
+            SpriteKind::Iron,
+            SpriteKind::Velorite,
+            SpriteKind::Chest,
+            SpriteKind::Door,
+            SpriteKind::CraftingBench,
+            SpriteKind::Bedroll,
+        ] {
+            assert!(!is_disposable_sprite(Block::air(kept)), "{kept:?}");
+        }
+    }
 
     #[test]
     fn canonical_blocks_are_unique_and_solid() {

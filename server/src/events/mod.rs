@@ -30,7 +30,7 @@ use self::{
     trade::handle_process_trade_action,
 };
 
-mod building;
+pub(crate) mod building;
 mod entity_creation;
 mod entity_manipulation;
 mod event_types;

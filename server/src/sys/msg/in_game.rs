@@ -175,7 +175,8 @@ impl Sys {
                             terrain_persistence.set_block(pos, new_block);
                         }
                     }
-                } else if survival_building && presence.kind.controlling_char() {
+                } else if survival_build_applies(survival_building, presence, can_build.get(entity))
+                {
                     emitters.emit(event::SurvivalBuildEvent {
                         entity,
                         pos,
@@ -194,7 +195,8 @@ impl Sys {
                     {
                         terrain_persistence.set_block(pos, new_block);
                     }
-                } else if survival_building && presence.kind.controlling_char() {
+                } else if survival_build_applies(survival_building, presence, can_build.get(entity))
+                {
                     emitters.emit(event::SurvivalBuildEvent {
                         entity,
                         pos,
@@ -274,9 +276,22 @@ impl Sys {
     }
 }
 
+/// Whether edits outside a creative build area are handled as survival
+/// building: the server allows it, the client controls a character and it
+/// isn't in creative build mode. Creative edits outside a permitted area are
+/// ignored, as without survival building.
+fn survival_build_applies(
+    survival_building: bool,
+    presence: &Presence,
+    can_build: Option<&CanBuild>,
+) -> bool {
+    survival_building
+        && presence.kind.controlling_char()
+        && !can_build.is_some_and(|can_build| can_build.enabled)
+}
+
 /// Whether `pos` lies in one of the creative build areas the entity is
-/// currently permitted (and has chosen) to build in. Edits elsewhere are
-/// handled as survival building, if that is enabled.
+/// currently permitted (and has chosen) to build in.
 fn in_creative_build_area(
     can_build: Option<&CanBuild>,
     build_areas: &AreasContainer<BuildArea>,
