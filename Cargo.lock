@@ -522,6 +522,15 @@ dependencies = [
 [[package]]
 name = "auth-common"
 version = "0.1.0"
+dependencies = [
+ "rand 0.8.8",
+ "serde",
+ "uuid",
+]
+
+[[package]]
+name = "auth-common"
+version = "0.1.0"
 source = "git+https://gitlab.com/veloren/auth.git?rev=ae0e16783a9f9041951296885f082308e155db79#ae0e16783a9f9041951296885f082308e155db79"
 dependencies = [
  "rand 0.8.8",
@@ -532,9 +541,28 @@ dependencies = [
 [[package]]
 name = "authc"
 version = "1.0.0"
+dependencies = [
+ "auth-common 0.1.0",
+ "bytes",
+ "fxhash",
+ "hex",
+ "http",
+ "http-body-util",
+ "hyper",
+ "hyper-rustls",
+ "hyper-util",
+ "rust-argon2",
+ "serde",
+ "serde_json",
+ "uuid",
+]
+
+[[package]]
+name = "authc"
+version = "1.0.0"
 source = "git+https://gitlab.com/veloren/auth.git?rev=ae0e16783a9f9041951296885f082308e155db79#ae0e16783a9f9041951296885f082308e155db79"
 dependencies = [
- "auth-common",
+ "auth-common 0.1.0 (git+https://gitlab.com/veloren/auth.git?rev=ae0e16783a9f9041951296885f082308e155db79)",
  "bytes",
  "fxhash",
  "hex",
@@ -8863,7 +8891,7 @@ name = "veloren-client"
 version = "0.18.0"
 dependencies = [
  "async-channel",
- "authc",
+ "authc 1.0.0",
  "byteorder",
  "clap",
  "hashbrown 0.17.1",
@@ -9185,7 +9213,7 @@ name = "veloren-server"
 version = "0.18.0"
 dependencies = [
  "atomicwrites",
- "authc",
+ "authc 1.0.0 (git+https://gitlab.com/veloren/auth.git?rev=ae0e16783a9f9041951296885f082308e155db79)",
  "bincode",
  "censor",
  "chrono",

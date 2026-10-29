@@ -10,9 +10,9 @@ See the [NixOS wiki](https://wiki.nixos.org/wiki/Flakes) for information on how 
 
 It is recommended to first set up the [Cachix](https://cachix.org) cache to save time with builds:
 ```shell
-nix shell nixpkgs#cachix -c cachix use veloren-nix
+nix shell nixpkgs#cachix -c cachix use valocraft  # (no public cache yet — this step can be skipped)
 # or if you don't have flakes:
-nix-shell -p cachix --run "cachix use veloren-nix"
+nix-shell -p cachix --run "cachix use valocraft  # (no public cache yet — this step can be skipped)"
 ```
 
 As this repository uses `git-lfs`, please make sure `git-lfs` is in your path.
@@ -23,7 +23,7 @@ git lfs install --local && git lfs fetch && git lfs checkout
 This should be automatically done if you use the development shell.
 
 If you get an issue such as `WARN gfx_backend_vulkan: Unable to create Vulkan instance: VkError(ERROR_INCOMPATIBLE_DRIVER)`,
-it might be that your system nixpkgs version and veloren repo nixpkgs version might be too far apart. In that case, you can try
+it might be that your system nixpkgs version and Valocraft repo nixpkgs version might be too far apart. In that case, you can try
 changing your system nixpkgs to the unstable channel, or change the `nixpkgs` input in the `flake.nix` to match your system
 nixpkgs.
 
@@ -34,9 +34,9 @@ nixpkgs.
 If you just want to run the game without installing it, you can do so with:
 ```shell
 # Voxygen (the default):
-nix run gitlab:veloren/veloren
+nix run github:nAItiklearn/valocraft
 # Server CLI:
-nix run gitlab:veloren/veloren#veloren-server-cli
+nix run github:nAItiklearn/valocraft#veloren-server-cli
 # or if you have a local repo
 nix run
 nix run .#veloren-server-cli
@@ -45,9 +45,9 @@ nix run .#veloren-server-cli
 To install the game into your user profile:
 ```shell
 # Voxygen:
-nix profile install gitlab:veloren/veloren
+nix profile install github:nAItiklearn/valocraft
 # Server CLI:
-nix profile install gitlab:veloren/veloren#veloren-server-cli
+nix profile install github:nAItiklearn/valocraft#veloren-server-cli
 # or if you have a local repo:
 nix profile install
 nix profile install .#veloren-server-cli
@@ -57,7 +57,7 @@ To install (for example) Voxygen on your system, the NixOS configuration (if you
 ```nix
 { description = "NixOS configuration with flakes";
 
-  inputs.veloren.url = gitlab:veloren/veloren;
+  inputs.veloren.url = github:nAItiklearn/valocraft;
 
   outputs = { self, nixpkgs, veloren }: {
     nixosConfigurations.<your-hostname> = nixpkgs.lib.nixosSystem rec {
@@ -145,9 +145,9 @@ You can use the `bundle` subcommand to bundle the game into a single distro-agno
 ```shell
 ## bundling latest commit to master
 # Voxygen:
-nix bundle gitlab:veloren/veloren
+nix bundle github:nAItiklearn/valocraft
 # Server CLI:
-nix bundle gitlab:veloren/veloren#veloren-server-cli
+nix bundle github:nAItiklearn/valocraft#veloren-server-cli
 ## for local repo:
 # Voxygen:
 nix bundle .#veloren-voxygen

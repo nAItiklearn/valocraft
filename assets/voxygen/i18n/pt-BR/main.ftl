@@ -6,7 +6,7 @@ main-creating_world = Criando Mundo
 main-tip = Dica:
 main-unbound_key_tip = não vinculado
 main-notice =
-    Bem-vindo a versão alfa de Veloren!
+    Bem-vindo a versão alfa de Valocraft!
 
     Antes de iniciar a diversão, tenha algumas coisinhas em mente:
 
@@ -14,9 +14,9 @@ main-notice =
 
     - Caso você possua comentários construtivos para tecer ou defeitos a serem reportados, você pode nos contactar através do repositório no Gitlab ou servidores Discord e Matrix.
 
-    - Veloren é open source. Você é livre pra jogar, modificar e redistribuir desde que em acordo com a versão 3 da GNU General Public license.
+    - Valocraft é open source. Você é livre pra jogar, modificar e redistribuir desde que em acordo com a versão 3 da GNU General Public license.
 
-    - Veloren é um projeto comunitário sem fins lucrativos, e todos que trabalham nele são voluntários.
+    - Valocraft é um projeto comunitário sem fins lucrativos, e todos que trabalham nele são voluntários.
     Se você gosta do que viu, sinta-se a vontade para ingressar nos nossos grupos de trabalho!
 
     Obrigado pelo seu tempo gasto lendo este aviso, esperamos que você goste do jogo!
@@ -28,7 +28,7 @@ main-login_process =
     Por favor, note que você precisa de uma conta para jogar em servidores com autenticação ativada.
 
     Você pode criar uma conta em:
-    https://veloren.net/account/
+    https://naitiklearn.github.io/valocraft/guide.html
 main-login-server_not_found = Servidor não encontrado.
 main-login-authentication_error = Erro de autenticação no servidor.
 main-login-internal_error = Erro interno no cliente. Dica: Provavelmente o personagem do jogador foi deletado.
@@ -81,7 +81,7 @@ loading-tips =
     .a11 = Jogar com outros é divertido! Pressione '{ $gameinput-social }' para ver quem está online.
     .a12 = Pressione '{ $gameinput-dance }' para dançar. Hora da festa!
     .a13 = Pressione '{ $gameinput-glide }' para abrir o Planador e conquistar os céus.
-    .a14 = Veloren ainda está no Pre-Alpha. Estamos nos empenhando ao máximo para melhorar a cada dia!
+    .a14 = Valocraft ainda está no Pre-Alpha. Estamos nos empenhando ao máximo para melhorar a cada dia!
     .a15 = Se quiser ingressar no time de Desenvolvedores ou apenas conversar conosco, acesse o nosso servidor do Discord.
     .a16 = Você pode exibir sua saúde em sua barra de vida nas opções.
     .a17 = Sente ao redor de uma fogueira (usando a tecla '{ $gameinput-sit }') para lentamente se recuperar de lesões.

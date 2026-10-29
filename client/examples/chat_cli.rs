@@ -59,7 +59,7 @@ fn main() {
 
     let provider = StaticCredentialProvider {
         credentials_by_auth: [(
-            Some("https://auth.veloren.net".to_string()),
+            None /* no central auth service; pass an auth server address explicitly */,
             Credentials::UsernamePassword(username.to_string(), password.to_string()),
         )]
         .into(),

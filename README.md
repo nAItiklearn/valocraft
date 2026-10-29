@@ -164,7 +164,8 @@ Start the dedicated server (`run-server.bat`, `ValocraftServer`, or
 launch auto-boots into singleplayer; log out to the main menu to use the
 multiplayer browser. Valocraft has no central account service: servers are
 account-free by default, and server owners can run their own self-hosted
-authentication if they want it.
+authentication if they want it. See [MULTIPLAYER.md](MULTIPLAYER.md) for the
+full guide.
 
 ---
 

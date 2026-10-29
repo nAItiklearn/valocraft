@@ -5,7 +5,7 @@ main-connecting = 接続中
 main-creating_world = 世界を生成中
 main-tip = ヒント:
 main-notice =
-    Velorenアルファ版へようこそ！
+    Valocraftアルファ版へようこそ！
 
     楽しいゲームへ飛び込む前に、いくつか注意事項があります。
 
@@ -13,15 +13,15 @@ main-notice =
 
     - あなたが建設的なフィードバックやバグ報告をしたいなら、Reddit、GitLab、コミュニティのDiscordサーバーから英語で私たちにご連絡ください。
 
-    - VelorenはGPL 3のオープンソースライセンスの下に提供されています。つまり、あなたはゲームを自由に遊んだり、改造したりコピーできます
+    - ValocraftはGPL 3のオープンソースライセンスの下に提供されています。つまり、あなたはゲームを自由に遊んだり、改造したりコピーできます
      （派生した作品もGPL 3の下ならばという条件でです）
 
-    - Velorenは非営利のコミュニティプロジェクトで、作業をしている人も全員、無償のボランティアです。
+    - Valocraftは非営利のコミュニティプロジェクトで、作業をしている人も全員、無償のボランティアです。
     気に入ったなら、開発チームやアートチームにぜひご参加ください。
 
     このお知らせを読んでいただき、ありがとうございます。それではゲームを楽しんでください！
 
-    ~ Veloren開発チームより
+    ~ Valocraft開発チームより
 main-login_process =
     ログインについてのご案内
 
@@ -30,7 +30,7 @@ main-login_process =
 
     アカウントは、以下のURLで作成できます。
 
-    https://veloren.net/account/
+    https://naitiklearn.github.io/valocraft/guide.html
 main-login-server_not_found = サーバーが見つかりません
 main-login-authentication_error = サーバーで認証エラーです
 main-login-failed_auth_server_url_invalid = 認証サーバーへの接続に失敗しました
@@ -64,7 +64,7 @@ loading-tips =
     .a11 = 誰かと一緒に遊ぶのは楽しいですよね！{ $gameinput-social }キーを押すと誰がオンラインかわかります。
     .a12 = { $gameinput-dance }キーを押すとダンスします。パーティ！
     .a13 = { $gameinput-glide }キーを押すとグライダーが開いて空を攻略できます。
-    .a14 = Velorenは、まだアルファ版です。私たちは日々、改善のためにベストを尽くしています！
+    .a14 = Valocraftは、まだアルファ版です。私たちは日々、改善のためにベストを尽くしています！
     .a15 = 開発チームに参加したい方や私たちとチャットしたい方はDiscordサーバーに参加しましょう。
     .a16 = 体力バーに表示される体力量の表示は、設定で切り替えられます。
     .a17 = { $gameinput-sit }キーを押して焚き火のそばに座ると体力がゆっくり回復します

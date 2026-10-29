@@ -3507,7 +3507,7 @@ mod tests {
         let runtime2 = Arc::clone(&runtime);
         let username = "Foo";
         let password = "Bar";
-        let auth_server = "auth.veloren.net";
+        let auth_server = "auth.example.invalid";
 
         let provider = StaticCredentialProvider {
             credentials_by_auth: [(

@@ -6,7 +6,7 @@ main-creating_world = Creando mundo
 main-tip = Consejo:
 main-unbound_key_tip = sin definir
 main-notice =
-    ¡Bienvenido a la versión alfa de Veloren!
+    ¡Bienvenido a la versión alfa de Valocraft!
 
     Antes de lanzarte a la diversión, por favor ten en cuenta un par de cosas:
 
@@ -14,9 +14,9 @@ main-notice =
 
     - Si tienes críticas constructivas o reportes de errores, puedes contactar con nosotros en nuestro repositorio de GitLab, o en nuestro servidor de Discord o de Matrix.
 
-    - Veloren es un juego de código abierto. Eres libre de jugar, modificar y redistribuir el juego en acuerdo con los términos y condiciones de la versión 3 de la licencia "GNU General Public License".
+    - Valocraft es un juego de código abierto. Eres libre de jugar, modificar y redistribuir el juego en acuerdo con los términos y condiciones de la versión 3 de la licencia "GNU General Public License".
 
-    - Veloren es un proyecto comunitario sin ánimo de lucro, y todo aquél que trabaja en él es un voluntario.
+    - Valocraft es un proyecto comunitario sin ánimo de lucro, y todo aquél que trabaja en él es un voluntario.
     Si te gusta lo que ves, ¡eres bienvenido a unirte a nuestros grupos de trabajo!
 
     Gracias por dedicar tu tiempo para leer esta noticia, ¡esperamos que disfrutes del juego!
@@ -28,7 +28,7 @@ main-login_process =
     Por favor, ten en cuenta que necesitas una cuenta para jugar en servidores con autenticación activada.
 
     Puedes crear una cuenta en:
-    https://veloren.net/account/
+    https://naitiklearn.github.io/valocraft/guide.html
 main-login-server_not_found = Servidor no encontrado.
 main-login-authentication_error = Error de autenticación al servidor.
 main-login-internal_error = Error interno en el cliente. Consejo: puede ser que el personaje esté borrado.
@@ -81,7 +81,7 @@ loading-tips =
     .a11 = ¡Jugar con otros jugadores es divertido! Pulsa '{ $gameinput-social }' para ver quien esta en línea.
     .a12 = Pulsa '{ $gameinput-dance }' para bailar. ¡Fiesta!
     .a13 = Pulsa '{ $gameinput-glide }' para utilizar tu paravela y conquistar los cielos.
-    .a14 = Veloren está todavia en pre-alfa. ¡Hacemos lo posible para mejorarlo día a día!
+    .a14 = Valocraft está todavia en pre-alfa. ¡Hacemos lo posible para mejorarlo día a día!
     .a15 = Si quieres unirte al equipo de desarrollo o conversar con nosotros, únete a nuestro servidor de Discord.
     .a16 = Puedes mostrar u ocultar tu total de salud en la barra de salud en los ajustes.
     .a17 = Siéntate cerca de una hoguera (con la tecla '{ $gameinput-sit }') para recuperarte lentamente de tus heridas.

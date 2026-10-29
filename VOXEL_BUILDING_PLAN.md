@@ -1,10 +1,10 @@
 # Valocraft — Voxel Building & Adventure Mechanics Plan
 
-This document maps the existing Veloren terrain/build/crafting machinery and gives a
+This document maps the existing Valocraft terrain/build/crafting machinery and gives a
 concrete, staged implementation plan for Minecraft-style block destruction, block
 placement, block items, and workbench recipes.
 
-The important discovery is that **the hard part already exists**: Veloren has a
+The important discovery is that **the hard part already exists**: Valocraft has a
 server-authoritative block-edit pipeline, a client-side build raycast, a `CanBuild`
 component with build areas, and network messages for both breaking and placing blocks.
 The work is therefore mostly about:
@@ -171,7 +171,7 @@ block item when a player breaks a block they placed.
 
 ### 1.4 Icons
 
-Item icons in Veloren are resolved from the item definition/asset pipeline. For the
+Item icons in Valocraft are resolved from the item definition/asset pipeline. For the
 first slice, reuse one generic block icon (or a per-material tinted cube) so the
 inventory/hotbar can render blocks. Add proper per-block icons later; the crafting and
 hotbar widgets only need a valid icon key.
