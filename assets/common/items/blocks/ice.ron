@@ -1,0 +1,7 @@
+ItemDef(
+    legacy_name: "Ice Block",
+    legacy_description: "Clear, cold ice. Cutting it cleanly takes a pickaxe.",
+    kind: Block(Ice),
+    quality: Common,
+    tags: [],
+)

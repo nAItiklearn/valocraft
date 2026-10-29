@@ -1341,6 +1341,11 @@ pub enum InventoryUpdateEvent {
     Possession,
     Debug,
     Craft,
+    /// A survival block edit was rejected by the server.
+    BuildFailed {
+        pos: Vec3<i32>,
+        reason: item::BuildFailedReason,
+    },
 }
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]

@@ -716,7 +716,8 @@ impl ParticleMgr {
             | Outcome::FireShockwave { .. }
             | Outcome::PortalActivated { .. }
             | Outcome::FromTheAshes { .. }
-            | Outcome::LaserBeam { .. } => {},
+            | Outcome::LaserBeam { .. }
+            | Outcome::PlaceBlock { .. } => {},
         }
     }
 

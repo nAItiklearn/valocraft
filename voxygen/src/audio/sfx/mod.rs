@@ -367,7 +367,8 @@ impl From<&InventoryUpdateEvent> for SfxEvent {
                 }
             },
             InventoryUpdateEvent::BlockCollectFailed { .. }
-            | InventoryUpdateEvent::EntityCollectFailed { .. } => {
+            | InventoryUpdateEvent::EntityCollectFailed { .. }
+            | InventoryUpdateEvent::BuildFailed { .. } => {
                 SfxEvent::Inventory(SfxInventoryEvent::CollectFailed)
             },
             InventoryUpdateEvent::Consumed(consumable) => {
@@ -880,6 +881,16 @@ impl SfxMgr {
                     sfx_trigger_item,
                     pos.map(|e| e as f32 + 0.5),
                     Some(1.2),
+                    SfxTag::Interaction,
+                );
+            },
+            Outcome::PlaceBlock { pos, .. } => {
+                // TODO: Dedicated sound effect!
+                let sfx_trigger_item = triggers.0.get_key_value(&SfxEvent::BreakBlock);
+                audio.emit_sfx(
+                    sfx_trigger_item,
+                    pos.map(|e| e as f32 + 0.5),
+                    Some(0.8),
                     SfxTag::Interaction,
                 );
             },

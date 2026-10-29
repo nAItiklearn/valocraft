@@ -1,0 +1,7 @@
+ItemDef(
+    legacy_name: "Turf Block",
+    legacy_description: "Earth with its grass still attached. Makes a lawn wherever it lands.",
+    kind: Block(Turf),
+    quality: Common,
+    tags: [],
+)

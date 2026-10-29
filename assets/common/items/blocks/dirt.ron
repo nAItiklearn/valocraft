@@ -1,0 +1,7 @@
+ItemDef(
+    legacy_name: "Dirt Block",
+    legacy_description: "A clump of packed earth. Good for filling holes, or digging new ones.",
+    kind: Block(Dirt),
+    quality: Common,
+    tags: [],
+)

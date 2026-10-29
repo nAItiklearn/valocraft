@@ -93,7 +93,7 @@ impl From<&Item> for Body {
                 _ => Body::Utility,
             },
             ItemKind::Consumable { .. } => Body::Consumable,
-            ItemKind::Ingredient { .. } => Body::Ingredient,
+            ItemKind::Ingredient { .. } | ItemKind::Block(_) => Body::Ingredient,
             _ => Body::Empty,
         }
     }

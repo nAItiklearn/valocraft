@@ -74,6 +74,11 @@ ItemDef(
             "linen_flax",
             "cloth_strips",
             "velorite_frag",
+            // Building blocks
+            "planks",
+            "planks_from_timber",
+            "stone_bricks",
+            "clay_bricks",
             // Tools
             "craftsman_hammer",
             "mortar_pestle",

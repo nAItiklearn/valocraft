@@ -1,0 +1,7 @@
+ItemDef(
+    legacy_name: "Clay Bricks",
+    legacy_description: "Fired red bricks with pale mortar. Warm, homely and hard-wearing.",
+    kind: Block(ClayBricks),
+    quality: Common,
+    tags: [],
+)

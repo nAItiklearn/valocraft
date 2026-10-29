@@ -1,9 +1,11 @@
 pub mod armor;
+pub mod building;
 pub mod item_key;
 pub mod modular;
 pub mod tool;
 
 // Reexports
+pub use building::{BuildFailedReason, BuildingBlock};
 pub use modular::{MaterialStatManifest, ModularBase, ModularComponent};
 pub use tool::{AbilityMap, AbilitySet, AbilitySpec, Hands, Tool, ToolKind};
 
@@ -381,6 +383,8 @@ pub enum ItemKind {
         recipes: Vec<String>,
     },
     Quest,
+    /// A placeable voxel used for survival building.
+    Block(BuildingBlock),
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -421,6 +425,7 @@ impl ItemKind {
             ItemKind::TagExamples { item_ids } => format!("TagExamples: {:?}", item_ids),
             ItemKind::RecipeGroup { .. } => String::from("Recipes:"),
             ItemKind::Quest => String::from("Quest:"),
+            ItemKind::Block(block) => format!("Block: {:?}", block),
         }
     }
 
@@ -436,7 +441,8 @@ impl ItemKind {
             | ItemKind::Utility { .. }
             | ItemKind::Ingredient { .. }
             | ItemKind::TagExamples { .. }
-            | ItemKind::RecipeGroup { .. } => false,
+            | ItemKind::RecipeGroup { .. }
+            | ItemKind::Block(_) => false,
         }
     }
 }
@@ -877,6 +883,7 @@ impl ItemDef {
                 | ItemKind::Quest
                 | ItemKind::Ingredient { .. }
                 | ItemKind::Utility { .. }
+                | ItemKind::Block(_)
                 | ItemKind::Tool(Tool {
                     kind: ToolKind::Throwable,
                     ..

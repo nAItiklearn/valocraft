@@ -1,0 +1,7 @@
+ItemDef(
+    legacy_name: "Snow Block",
+    legacy_description: "Firmly packed snow. Keeps its shape surprisingly well.",
+    kind: Block(Snow),
+    quality: Common,
+    tags: [],
+)

@@ -1,0 +1,7 @@
+ItemDef(
+    legacy_name: "Leaf Block",
+    legacy_description: "A dense bundle of leaves. Light, green and a little rustly.",
+    kind: Block(Leaves),
+    quality: Common,
+    tags: [],
+)

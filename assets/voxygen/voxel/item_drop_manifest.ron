@@ -1447,4 +1447,16 @@
     // Quest items
     Simple("common.items.quest.legoom_leaf"): "voxel.sprite.quest.legoom_leaf",
     Simple("common.items.quest.gnarling_carving"): "voxel.sprite.quest.gnarling_carving",
+    // Survival building blocks
+    Simple("common.items.blocks.dirt"): "voxel.item.building_block.dirt-drop",
+    Simple("common.items.blocks.turf"): "voxel.item.building_block.turf-drop",
+    Simple("common.items.blocks.sand"): "voxel.item.building_block.sand-drop",
+    Simple("common.items.blocks.snow"): "voxel.item.building_block.snow-drop",
+    Simple("common.items.blocks.stone"): "voxel.item.building_block.stone-drop",
+    Simple("common.items.blocks.timber"): "voxel.item.building_block.timber-drop",
+    Simple("common.items.blocks.leaves"): "voxel.item.building_block.leaves-drop",
+    Simple("common.items.blocks.ice"): "voxel.item.building_block.ice-drop",
+    Simple("common.items.blocks.planks"): "voxel.item.building_block.planks-drop",
+    Simple("common.items.blocks.stone_bricks"): "voxel.item.building_block.stone_bricks-drop",
+    Simple("common.items.blocks.clay_bricks"): "voxel.item.building_block.clay_bricks-drop",
 })

@@ -200,6 +200,36 @@
         ],
         craft_sprite: Some(CraftingBench),
     ),
+    // Survival building blocks
+    "planks": (
+        output: ("common.items.blocks.planks", 4),
+        inputs: [
+            (Item("common.items.log.wood"), 1, false),
+        ],
+        craft_sprite: None,
+    ),
+    "planks_from_timber": (
+        output: ("common.items.blocks.planks", 2),
+        inputs: [
+            (Item("common.items.blocks.timber"), 1, false),
+        ],
+        craft_sprite: None,
+    ),
+    "stone_bricks": (
+        output: ("common.items.blocks.stone_bricks", 2),
+        inputs: [
+            (Item("common.items.blocks.stone"), 2, false),
+        ],
+        craft_sprite: Some(CraftingBench),
+    ),
+    "clay_bricks": (
+        output: ("common.items.blocks.clay_bricks", 3),
+        inputs: [
+            (Item("common.items.blocks.dirt"), 2, false),
+            (Item("common.items.blocks.sand"), 1, false),
+        ],
+        craft_sprite: Some(CraftingBench),
+    ),
     "apple_shroom_curry": (
         output: ("common.items.food.apple_mushroom_curry", 1),
         inputs: [

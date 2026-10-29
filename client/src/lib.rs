@@ -2921,6 +2921,7 @@ impl Client {
                     match event {
                         InventoryUpdateEvent::BlockCollectFailed { .. } => {},
                         InventoryUpdateEvent::EntityCollectFailed { .. } => {},
+                        InventoryUpdateEvent::BuildFailed { .. } => {},
                         _ => update_inventory = true,
                     }
                 }

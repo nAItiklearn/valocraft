@@ -208,6 +208,11 @@ pub enum Outcome {
         pos: Vec3<f32>,
         radius: f32,
     },
+    /// A building block was placed in survival build mode.
+    PlaceBlock {
+        pos: Vec3<i32>,
+        color: Option<Rgb<u8>>,
+    },
 }
 
 impl Outcome {
@@ -255,6 +260,7 @@ impl Outcome {
             | Outcome::Transformation { pos }
             | Outcome::FirePillarIndicator { pos, .. } => Some(*pos),
             Outcome::BreakBlock { pos, .. }
+            | Outcome::PlaceBlock { pos, .. }
             | Outcome::DamagedBlock { pos, .. }
             | Outcome::SpriteUnlocked { pos }
             | Outcome::SpriteDelete { pos, .. }

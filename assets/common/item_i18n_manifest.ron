@@ -7689,6 +7689,17 @@
         Simple("common.items.recipes.weapons.frostwood"): "recipe-weapons-frostwood",
         Simple("common.items.recipes.weapons.eldwood"): "recipe-weapons-eldwood",
         Simple("common.items.recipes.default"): "recipe-default",
+        Simple("common.items.blocks.dirt"): "common-items-blocks-dirt",
+        Simple("common.items.blocks.turf"): "common-items-blocks-turf",
+        Simple("common.items.blocks.sand"): "common-items-blocks-sand",
+        Simple("common.items.blocks.snow"): "common-items-blocks-snow",
+        Simple("common.items.blocks.stone"): "common-items-blocks-stone",
+        Simple("common.items.blocks.timber"): "common-items-blocks-timber",
+        Simple("common.items.blocks.leaves"): "common-items-blocks-leaves",
+        Simple("common.items.blocks.ice"): "common-items-blocks-ice",
+        Simple("common.items.blocks.planks"): "common-items-blocks-planks",
+        Simple("common.items.blocks.stone_bricks"): "common-items-blocks-stone_bricks",
+        Simple("common.items.blocks.clay_bricks"): "common-items-blocks-clay_bricks",
     },
     // Templating support
     //

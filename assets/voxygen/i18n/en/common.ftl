@@ -103,6 +103,7 @@ common-kind-utility = Utility
 common-kind-ingredient = Ingredient
 common-kind-recipegroup = Recipes
 common-kind-quest = Quest
+common-kind-block = Building Block
 common-kind-lantern = Lantern
 common-hands-one = One-Handed
 common-hands-two = Two-Handed

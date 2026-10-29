@@ -285,10 +285,12 @@ impl CraftingTab {
                 .tags()
                 .iter()
                 .any(|tag| matches!(tag, &ItemTag::Potion | &ItemTag::Charm)),
-            CraftingTab::ProcessedMaterial => item
-                .tags()
-                .iter()
-                .any(|tag| matches!(tag, &ItemTag::MaterialKind(_) | &ItemTag::BaseMaterial)),
+            CraftingTab::ProcessedMaterial => {
+                matches!(&*item.kind(), ItemKind::Block(_))
+                    || item.tags().iter().any(|tag| {
+                        matches!(tag, &ItemTag::MaterialKind(_) | &ItemTag::BaseMaterial)
+                    })
+            },
             CraftingTab::Bag => item.tags().contains(&ItemTag::Bag),
             CraftingTab::Tool => item.tags().contains(&ItemTag::CraftingTool),
             CraftingTab::Utility => item.tags().contains(&ItemTag::Utility),

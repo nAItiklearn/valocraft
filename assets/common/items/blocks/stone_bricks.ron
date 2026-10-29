@@ -1,0 +1,7 @@
+ItemDef(
+    legacy_name: "Stone Bricks",
+    legacy_description: "Squared stone laid in neat courses. The backbone of any sturdy keep.",
+    kind: Block(StoneBricks),
+    quality: Common,
+    tags: [],
+)

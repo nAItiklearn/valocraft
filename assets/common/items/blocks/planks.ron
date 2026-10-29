@@ -1,0 +1,7 @@
+ItemDef(
+    legacy_name: "Plank Block",
+    legacy_description: "Sawn wooden boards, ready to become floors, walls and roofs.",
+    kind: Block(Planks),
+    quality: Common,
+    tags: [],
+)

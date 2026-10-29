@@ -1,0 +1,7 @@
+ItemDef(
+    legacy_name: "Stone Block",
+    legacy_description: "A rough chunk of bedrock. Needs a pickaxe to cut free.",
+    kind: Block(Stone),
+    quality: Common,
+    tags: [],
+)

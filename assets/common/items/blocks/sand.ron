@@ -1,0 +1,7 @@
+ItemDef(
+    legacy_name: "Sand Block",
+    legacy_description: "Fine, dry sand. Every beach house starts with one.",
+    kind: Block(Sand),
+    quality: Common,
+    tags: [],
+)

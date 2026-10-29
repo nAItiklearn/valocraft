@@ -1,0 +1,7 @@
+ItemDef(
+    legacy_name: "Timber Block",
+    legacy_description: "A section of tree trunk, bark and all.",
+    kind: Block(Timber),
+    quality: Common,
+    tags: [],
+)
