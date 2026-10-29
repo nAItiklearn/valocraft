@@ -510,7 +510,18 @@
                 "instrument/timbrel_of_chaos/timbrel_of_chaos_2.ogg", "instrument/timbrel_of_chaos/timbrel_of_chaos_3.ogg",
             ],
             notes: "These files will be categorized with known authors eventually. DO NOT ADD NEW FILES TO THIS ENTRY.",
-        )
+        ),
+        (
+            authors: ["Kenney (kenney.nl)"],
+            files: [
+                "building/place_soft_1.ogg", "building/place_soft_2.ogg", "building/place_soft_3.ogg", "building/place_soft_4.ogg",
+                "building/place_wood_1.ogg", "building/place_wood_2.ogg", "building/place_wood_3.ogg", "building/place_wood_4.ogg",
+                "building/place_stone_1.ogg", "building/place_stone_2.ogg", "building/place_stone_3.ogg", "building/place_stone_4.ogg",
+            ],
+            license: "CC0 1.0",
+            license_link: "https://creativecommons.org/publicdomain/zero/1.0/",
+            notes: "Mixed from Kenney's Impact Sounds 1.0 (https://kenney.nl/assets/impact-sounds): impactSoft_medium, footstep_snow, impactWood_medium, impactPlank_medium and footstep_concrete, two layers per file, made mono, trimmed and loudness matched by scripts/gen_building_sounds.py.",
+        ),
     ],
 
     fonts: [

@@ -112,6 +112,7 @@ subtitle-skill_point = Skill Point gained
 subtitle-sceptre_beam = Sceptre beam
 subtitle-flame_thrower = Flame thrower
 subtitle-break_block = Block destroyed
+subtitle-place_block = Block placed
 subtitle-attack_blocked = Attack blocked
 subtitle-parry = Parried
 subtitle-interrupted = Interrupted

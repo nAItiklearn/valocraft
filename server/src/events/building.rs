@@ -341,7 +341,7 @@ impl SurvivalBuildData<'_> {
         }
         self.outcomes.emit_now(Outcome::PlaceBlock {
             pos,
-            color: new_block.get_color(),
+            block: building_block,
         });
     }
 }

@@ -1709,6 +1709,36 @@
         threshold: 0.2,
         subtitle: "subtitle-damage_strong_broken",
     ),
+    PlaceBlock(Soft): (
+        files: [
+            "voxygen.audio.sfx.building.place_soft_1",
+            "voxygen.audio.sfx.building.place_soft_2",
+            "voxygen.audio.sfx.building.place_soft_3",
+            "voxygen.audio.sfx.building.place_soft_4",
+        ],
+        threshold: 0.3,
+        subtitle: "subtitle-place_block",
+    ),
+    PlaceBlock(Wood): (
+        files: [
+            "voxygen.audio.sfx.building.place_wood_1",
+            "voxygen.audio.sfx.building.place_wood_2",
+            "voxygen.audio.sfx.building.place_wood_3",
+            "voxygen.audio.sfx.building.place_wood_4",
+        ],
+        threshold: 0.3,
+        subtitle: "subtitle-place_block",
+    ),
+    PlaceBlock(Stone): (
+        files: [
+            "voxygen.audio.sfx.building.place_stone_1",
+            "voxygen.audio.sfx.building.place_stone_2",
+            "voxygen.audio.sfx.building.place_stone_3",
+            "voxygen.audio.sfx.building.place_stone_4",
+        ],
+        threshold: 0.3,
+        subtitle: "subtitle-place_block",
+    ),
     Damage: (
         files: [
             "voxygen.audio.sfx.character.hit_1",

@@ -1,7 +1,10 @@
 use crate::{
     DamageSource,
     combat::DamageContributor,
-    comp::{self, item::ToolKind},
+    comp::{
+        self,
+        item::{BuildingBlock, ToolKind},
+    },
     terrain::SpriteKind,
     uid::Uid,
 };
@@ -211,7 +214,7 @@ pub enum Outcome {
     /// A building block was placed in survival build mode.
     PlaceBlock {
         pos: Vec3<i32>,
-        color: Option<Rgb<u8>>,
+        block: BuildingBlock,
     },
 }
 

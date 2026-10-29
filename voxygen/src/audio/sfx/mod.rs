@@ -91,7 +91,10 @@ use common::{
     comp::{
         Body, CharacterAbilityType, Health, InventoryUpdateEvent, UtteranceKind, beam, biped_large,
         biped_small, bird_large, bird_medium, crustacean, humanoid,
-        item::{AbilitySpec, ItemDefinitionId, ItemDesc, ItemKind, ToolKind, item_key::ItemKey},
+        item::{
+            AbilitySpec, BuildingBlock, ItemDefinitionId, ItemDesc, ItemKind, ToolKind,
+            item_key::ItemKey,
+        },
         object,
         poise::PoiseState,
         quadruped_low, quadruped_medium, quadruped_small,
@@ -108,6 +111,31 @@ use rand::prelude::*;
 use serde::Deserialize;
 use tracing::{debug, error, warn};
 use vek::*;
+
+/// The sound family of a building block, used for its place sound.
+#[derive(Clone, Copy, Debug, PartialEq, Deserialize, Hash, Eq)]
+pub enum BlockSound {
+    Soft,
+    Wood,
+    Stone,
+}
+
+impl From<BuildingBlock> for BlockSound {
+    fn from(block: BuildingBlock) -> Self {
+        match block {
+            BuildingBlock::Dirt
+            | BuildingBlock::Turf
+            | BuildingBlock::Sand
+            | BuildingBlock::Snow
+            | BuildingBlock::Leaves => BlockSound::Soft,
+            BuildingBlock::Timber | BuildingBlock::Planks => BlockSound::Wood,
+            BuildingBlock::Stone
+            | BuildingBlock::Ice
+            | BuildingBlock::StoneBricks
+            | BuildingBlock::ClayBricks => BlockSound::Stone,
+        }
+    }
+}
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Hash, Eq)]
 pub enum SfxEvent {
@@ -153,6 +181,7 @@ pub enum SfxEvent {
     PickaxeDamage,
     PickaxeDamageStrong,
     PickaxeBreakBlock,
+    PlaceBlock(BlockSound),
     SceptreBeam,
     SkillPointGain,
     ArrowHit,
@@ -884,13 +913,14 @@ impl SfxMgr {
                     SfxTag::Interaction,
                 );
             },
-            Outcome::PlaceBlock { pos, .. } => {
-                // TODO: Dedicated sound effect!
-                let sfx_trigger_item = triggers.0.get_key_value(&SfxEvent::BreakBlock);
+            Outcome::PlaceBlock { pos, block } => {
+                let sfx_trigger_item = triggers
+                    .0
+                    .get_key_value(&SfxEvent::PlaceBlock(BlockSound::from(*block)));
                 audio.emit_sfx(
                     sfx_trigger_item,
                     pos.map(|e| e as f32 + 0.5),
-                    Some(0.8),
+                    Some(0.9),
                     SfxTag::Interaction,
                 );
             },
