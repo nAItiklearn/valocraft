@@ -61,7 +61,7 @@ use crate::{
 use hashbrown::HashMap;
 use interactable::{BlockInteraction, EntityInteraction, Interactable, get_interactables};
 use settings_change::Language::ChangeLanguage;
-use target::targets_under_cursor;
+use target::{BuildTargeting, targets_under_cursor};
 #[cfg(feature = "egui-ui")]
 use voxygen_egui::EguiDebugInfo;
 
@@ -683,10 +683,12 @@ impl PlayState for SessionState {
                 && self.survival_build.enabled
                 && client.server_constants().survival_building
                 && presence.controlling_char();
-            let build_reach = if can_build {
-                Some(f32::INFINITY)
+            let build_targeting = if can_build {
+                Some(BuildTargeting::Creative)
             } else if survival_build_active {
-                Some(SURVIVAL_BUILD_REACH)
+                Some(BuildTargeting::Survival {
+                    reach: SURVIVAL_BUILD_REACH,
+                })
             } else {
                 None
             };
@@ -708,7 +710,7 @@ impl PlayState for SessionState {
                     &client,
                     cam_pos,
                     cam_dir,
-                    build_reach,
+                    build_targeting,
                     active_mine_tool,
                     self.viewpoint_entity().0,
                 );
@@ -843,8 +845,10 @@ impl PlayState for SessionState {
                                 let mut client = self.client.borrow_mut();
                                 if let Some(build_target) = build_target.filter(|_| state) {
                                     let selected_pos =
-                                        build_target.kind.0.map(|p| p.floor() as i32);
-                                    if survival_build_active {
+                                        build_target.kind.place.map(|p| p.floor() as i32);
+                                    if survival_build_active && !build_target.kind.place_in_reach {
+                                        self.survival_build.fail(BuildFailedReason::OutOfReach);
+                                    } else if survival_build_active {
                                         let block = {
                                             let inventories = client.inventories();
                                             let inventory = inventories.get(client.entity());

@@ -23,7 +23,25 @@ pub struct Target<T> {
 }
 
 #[derive(Clone, Copy, Debug)]
-pub struct Build(pub Vec3<f32>);
+pub struct Build {
+    /// Centre of the voxel that a placed block would fill.
+    pub place: Vec3<f32>,
+    /// Whether that voxel is within reach as well. The targeted block always
+    /// is, but the voxel in front of it can be up to a block further away.
+    pub place_in_reach: bool,
+}
+
+/// How terrain is targeted for building.
+#[derive(Clone, Copy, Debug)]
+pub enum BuildTargeting {
+    /// Creative building: any distance, through any non-solid sprite.
+    Creative,
+    /// Survival building, limited to `reach` from the player's eyes to the
+    /// centre of the edited voxel. Sprites with an interaction of their own
+    /// (ores, collectibles, ...) stop the ray, so they keep that interaction
+    /// instead of the block behind them being targeted.
+    Survival { reach: f32 },
+}
 
 #[derive(Clone, Copy, Debug)]
 pub struct Collectable;
@@ -47,13 +65,12 @@ pub const MAX_TARGET_RANGE: f32 = 500.0;
 
 /// Calculate what the cursor is pointing at within the 3d scene.
 ///
-/// `build_reach` is the maximum distance from the player's eyes to the centre
-/// of a targeted block, or `None` if the player cannot build at all.
+/// `build` is `None` if the player cannot build at all.
 pub(super) fn targets_under_cursor(
     client: &Client,
     cam_pos: Vec3<f32>,
     cam_dir: Vec3<f32>,
-    build_reach: Option<f32>,
+    build: Option<BuildTargeting>,
     active_mine_tool: Option<ToolKind>,
     viewpoint_entity: specs::Entity,
 ) -> (
@@ -113,12 +130,22 @@ pub(super) fn targets_under_cursor(
         .filter(|(_, b)| matches!(b, Ok(Some(b)) if b.mine_tool().zip(active_mine_tool).map_or(false, |(a, b)| a == b)))
         // ...and by the distance to the player's eye position
         .filter(|(d, _)| eye_pos.distance(break_tgt_pos(*d)) < MAX_PICKUP_RANGE);
-    let build_cast = build_reach.and_then(|reach| {
-        Some(ray.until(|b| b.is_solid()).cast())
-            // Building is limited by the maximum target distance...
-            .filter(|(d, _)| *d < MAX_TARGET_RANGE)
-            // ...and by how far the player can reach
-            .filter(|(d, _)| eye_pos.distance(break_tgt_pos(*d)) <= reach)
+    let build_reach = match build {
+        Some(BuildTargeting::Creative) => f32::INFINITY,
+        Some(BuildTargeting::Survival { reach }) => reach,
+        None => 0.0,
+    };
+    let build_cast = build.and_then(|build| {
+        Some(match build {
+            BuildTargeting::Creative => ray.until(|b| b.is_solid()).cast(),
+            BuildTargeting::Survival { .. } => ray
+                .until(|b| b.is_solid() || b.is_collectible() || b.mine_tool().is_some())
+                .cast(),
+        })
+        // Building is limited by the maximum target distance...
+        .filter(|(d, _)| *d < MAX_TARGET_RANGE)
+        // ...and by how far the player can reach
+        .filter(|(d, _)| eye_pos.distance(break_tgt_pos(*d)) <= build_reach)
     });
     // Visual obstacles are limited by filled blocks
     let obstacle_cast =
@@ -225,7 +252,10 @@ pub(super) fn targets_under_cursor(
     });
 
     let build_target = build_cast.map(|(d, _)| Target {
-        kind: Build(place_tgt_pos(d)),
+        kind: Build {
+            place: place_tgt_pos(d),
+            place_in_reach: eye_pos.distance(place_tgt_pos(d)) <= build_reach,
+        },
         position: break_tgt_pos(d),
     });
 
