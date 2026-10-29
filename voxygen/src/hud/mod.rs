@@ -4,6 +4,7 @@ mod bag;
 mod buffs;
 mod change_notification;
 mod chat;
+mod contracts;
 mod crafting;
 mod diary;
 mod esc_menu;
@@ -271,6 +272,9 @@ widget_ids! {
         performance_bg,
         performance_accent,
         performance_text,
+        contract_tracker_bg,
+        contract_tracker_accent,
+        contract_tracker_text,
 
         // Debug
         debug_bg,
@@ -322,6 +326,7 @@ widget_ids! {
         pause_overlay,
         social_window,
         quest_window,
+        contracts_window,
         tutorial_window,
         crafting_window,
         settings_window,
@@ -923,6 +928,7 @@ pub struct Show {
     trade_details: bool,
     social: bool,
     diary: bool,
+    contracts: bool,
     group: bool,
     quest: bool,
     group_menu: bool,
@@ -964,6 +970,7 @@ impl Show {
             trade_details: false,
             social: false,
             diary: false,
+            contracts: false,
             group: false,
             quest: false,
             group_menu: false,
@@ -1003,6 +1010,7 @@ impl Show {
         if !self.esc_menu {
             self.set_bag_state(open);
             self.map = false;
+            self.contracts = false;
             self.crafting_fields.salvage = false;
 
             if !open {
@@ -1020,6 +1028,7 @@ impl Show {
             self.set_bag_state(open);
             self.trade = open;
             self.map = false;
+            self.contracts = false;
             self.want_grab = !self.any_window_requires_cursor();
         }
     }
@@ -1033,6 +1042,7 @@ impl Show {
             self.social = false;
             self.quest = false;
             self.diary = false;
+            self.contracts = false;
             self.want_grab = !self.any_window_requires_cursor();
         }
     }
@@ -1045,6 +1055,7 @@ impl Show {
             }
             self.social = open;
             self.diary = false;
+            self.contracts = false;
             self.want_grab = !self.any_window_requires_cursor();
         }
     }
@@ -1054,6 +1065,7 @@ impl Show {
             self.quest = open;
             self.diary = false;
             self.map = false;
+            self.contracts = false;
             self.want_grab = !self.any_window_requires_cursor();
         }
     }
@@ -1069,6 +1081,7 @@ impl Show {
             self.crafting_fields.recipe_inputs = HashMap::new();
             self.set_bag_state(open);
             self.map = false;
+            self.contracts = false;
             self.want_grab = !self.any_window_requires_cursor();
         }
     }
@@ -1099,8 +1112,23 @@ impl Show {
             self.crafting_fields.salvage = false;
             self.set_bag_state(false);
             self.map = false;
+            self.contracts = false;
             self.diary_fields = diary::DiaryShow::default();
             self.diary = open;
+            self.want_grab = !self.any_window_requires_cursor();
+        }
+    }
+
+    fn contracts(&mut self, open: bool) {
+        if !self.esc_menu {
+            self.contracts = open;
+            self.social = false;
+            self.quest = false;
+            self.crafting = false;
+            self.crafting_fields.salvage = false;
+            self.set_bag_state(false);
+            self.map = false;
+            self.diary = false;
             self.want_grab = !self.any_window_requires_cursor();
         }
     }
@@ -1118,6 +1146,7 @@ impl Show {
             self.crafting = false;
             self.crafting_fields.salvage = false;
             self.diary = false;
+            self.contracts = false;
             self.want_grab = !self.any_window_requires_cursor();
         }
     }
@@ -1131,6 +1160,8 @@ impl Show {
     fn toggle_crafting(&mut self) { self.crafting(!self.crafting) }
 
     fn toggle_diary(&mut self) { self.diary(!self.diary) }
+
+    fn toggle_contracts(&mut self) { self.contracts(!self.contracts) }
 
     fn toggle_ui(&mut self) { self.ui = !self.ui; }
 
@@ -1163,6 +1194,7 @@ impl Show {
             || self.social
             || self.crafting
             || self.diary
+            || self.contracts
             || self.intro
             || self.quest
             || !matches!(self.open_windows, Windows::None)
@@ -1178,6 +1210,7 @@ impl Show {
             self.social = false;
             self.quest = false;
             self.diary = false;
+            self.contracts = false;
             self.crafting = false;
             self.open_windows = Windows::None;
             self.want_grab = true;
@@ -1366,6 +1399,8 @@ pub struct Hud {
     clear_chat: bool,
     current_dialogue: Option<(EcsEntity, Instant, rtsim::Dialogue<true>)>,
     extra_markers: Vec<map::ExtraMarker>,
+    contract_markers: Vec<map::ExtraMarker>,
+    contracts: contracts::State,
 }
 
 impl Hud {
@@ -1404,7 +1439,7 @@ impl Hud {
         let fonts = Fonts::load(global_state.i18n.read().fonts(), &mut ui)
             .expect("Impossible to load fonts!");
         // Get the server name.
-        let server = &client.server_info().name;
+        let server = client.server_info().name.clone();
         // Get the id, unwrap is safe because this CANNOT be None at this
         // point.
 
@@ -1417,7 +1452,14 @@ impl Hud {
 
         // Create a new HotbarState from the persisted slots.
         let hotbar_state =
-            HotbarState::new(global_state.profile.get_hotbar_slots(server, character_id));
+            HotbarState::new(global_state.profile.get_hotbar_slots(&server, character_id));
+        let contracts = contracts::State::new(
+            global_state
+                .profile
+                .get_contract_progress(&server, character_id),
+            server,
+            character_id,
+        );
 
         let slot_manager = slots::SlotManager::new(
             ui.id_generator(),
@@ -1474,6 +1516,8 @@ impl Hud {
             clear_chat: false,
             current_dialogue: None,
             extra_markers: Vec::new(),
+            contract_markers: Vec::new(),
+            contracts,
         }
     }
 
@@ -2755,6 +2799,24 @@ impl Hud {
                 .font_size(self.fonts.cyri.scale(11))
                 .middle_of(self.ids.performance_bg)
                 .set(self.ids.performance_text, ui_widgets);
+
+            let player_xy = client.position().map(|pos| pos.xy()).unwrap_or_default();
+            if let Some((tracker_text, tracker_color)) = self.contracts.hud_tracker(player_xy) {
+                Rectangle::fill([420.0, 22.0])
+                    .rgba(0.02, 0.03, 0.04, 0.65)
+                    .mid_bottom_with_margin_on(self.ids.performance_bg, -26.0)
+                    .set(self.ids.contract_tracker_bg, ui_widgets);
+                Rectangle::fill([3.0, 22.0])
+                    .color(tracker_color)
+                    .top_left_with_margins_on(self.ids.contract_tracker_bg, 0.0, 0.0)
+                    .set(self.ids.contract_tracker_accent, ui_widgets);
+                Text::new(&tracker_text)
+                    .color(TEXT_COLOR)
+                    .font_id(self.fonts.cyri.conrod_id)
+                    .font_size(self.fonts.cyri.scale(11))
+                    .middle_of(self.ids.contract_tracker_bg)
+                    .set(self.ids.contract_tracker_text, ui_widgets);
+            }
         }
 
         // Display debug window.
@@ -3518,6 +3580,7 @@ impl Hud {
             &persisted_state.location_markers,
             &self.voxel_minimap,
             &self.extra_markers,
+            &self.contract_markers,
         )
         .set(self.ids.minimap, ui_widgets)
         {
@@ -4007,6 +4070,30 @@ impl Hud {
                 }
             }
         }
+        // Contracts / Field Journal
+        if self.show.contracts {
+            let player_xy = client.position().map(|pos| pos.xy()).unwrap_or_default();
+            let contract_events =
+                contracts::View::new(&self.contracts, &self.imgs, &self.fonts, i18n, player_xy)
+                    .set(self.ids.contracts_window, ui_widgets);
+            for event in contract_events {
+                let actions = match event {
+                    contracts::Event::Close => {
+                        self.show.contracts(false);
+                        self.show.want_grab = true;
+                        self.force_ungrab = false;
+                        Vec::new()
+                    },
+                    contracts::Event::Accept(index) => self.contracts.accept(client, index),
+                    contracts::Event::Abandon => self.contracts.abandon(),
+                    contracts::Event::FoundBeacon => self.contracts.found_beacon(client),
+                };
+                apply_contract_actions(&mut self.new_messages, actions, &mut events);
+            }
+            if self.contracts.take_dirty() {
+                self.contracts.save(global_state);
+            }
+        }
         // Map
         if self.show.map {
             let mut persisted_state = self.persisted_state.borrow_mut();
@@ -4023,6 +4110,7 @@ impl Hud {
                 &persisted_state.location_markers,
                 self.map_drag,
                 &self.extra_markers,
+                &self.contract_markers,
             )
             .set(self.ids.map, ui_widgets)
             {
@@ -5111,6 +5199,10 @@ impl Hud {
                         self.show.toggle_diary();
                         true
                     },
+                    GameInput::Contracts if state => {
+                        self.show.toggle_contracts();
+                        true
+                    },
                     GameInput::Settings if state => {
                         self.show.toggle_settings(global_state);
                         true
@@ -5254,6 +5346,14 @@ impl Hud {
         ),
     ) -> Vec<Event> {
         span!(_guard, "maintain", "Hud::maintain");
+
+        let actions = self.contracts.update(client, dt.as_secs_f32());
+        apply_contract_actions(&mut self.new_messages, actions, &mut self.events);
+        let player_xy = client.position().map(|pos| pos.xy()).unwrap_or_default();
+        self.contract_markers = self.contracts.markers(player_xy);
+        if self.contracts.take_dirty() {
+            self.contracts.save(global_state);
+        }
 
         // Remove extra map markers that we've wandered a long distance away from
         if let Some(pos) = client.position() {
@@ -5567,6 +5667,29 @@ pub fn get_quality_col(quality: Quality) -> Color {
         Quality::Legendary => QUALITY_LEGENDARY,
         Quality::Artifact => QUALITY_ARTIFACT,
         Quality::Debug => QUALITY_DEBUG,
+    }
+}
+
+fn apply_contract_actions(
+    new_messages: &mut VecDeque<comp::ChatMsg>,
+    actions: Vec<contracts::Action>,
+    events: &mut Vec<Event>,
+) {
+    for action in actions {
+        match action {
+            contracts::Action::GrantCoins(amount) => {
+                events.push(Event::SendCommand("give_item".to_string(), vec![
+                    "common.items.utility.coins".to_string(),
+                    amount.to_string(),
+                ]));
+            },
+            contracts::Action::SpawnCamp => {
+                events.push(Event::SendCommand("campfire".to_string(), Vec::new()));
+            },
+            contracts::Action::Message(msg) => {
+                new_messages.push_back(comp::ChatType::Meta.into_msg(comp::Content::Plain(msg)));
+            },
+        }
     }
 }
 

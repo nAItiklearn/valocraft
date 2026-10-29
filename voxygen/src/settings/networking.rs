@@ -21,12 +21,13 @@ impl Default for NetworkingSettings {
     fn default() -> Self {
         Self {
             username: common::consts::OFFLINE_PROFILE_NAME.to_string(),
-            servers: vec!["server.veloren.net".to_string()],
-            default_server: "server.veloren.net".to_string(),
-            trusted_auth_servers: ["https://auth.veloren.net"]
-                .iter()
-                .map(|s| s.to_string())
-                .collect(),
+            // Valocraft ships with no official public server or central auth
+            // service. Server owners run their own authentication (see
+            // RUNNING.md / website account guide); players add servers and
+            // trust their auth endpoints per server.
+            servers: Vec::new(),
+            default_server: String::new(),
+            trusted_auth_servers: HashSet::new(),
             use_srv: true,
             use_quic: false,
             validate_tls: true,

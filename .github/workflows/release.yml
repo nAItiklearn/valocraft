@@ -259,6 +259,14 @@ jobs:
           test -n "$(find dist -maxdepth 1 -type f -iname '*linux*' -print -quit)"
           test -n "$(find dist -maxdepth 1 -type f -iname '*macos*aarch64*' -print -quit)"
 
+      - name: Generate checksums
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd dist
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
       - name: Publish release
         shell: bash
         env:
@@ -267,25 +275,40 @@ jobs:
           PRERELEASE: ${{ inputs.prerelease || false }}
         run: |
           set -euo pipefail
-          cat > release-notes.md <<'EOF'
+          BASE="https://github.com/${GH_REPO}/releases/download/${TAG}"
+          {
+            cat <<EOF
           ## Valocraft desktop release
 
           This release contains the portable desktop client and the optional
-          dedicated server for the required platforms.
+          dedicated server. **Desktop only: Windows, macOS, and Linux.**
 
-          - **Windows:** extract the `.zip`, then run `run.bat`.
-          - **macOS:** open the `.dmg` and drag Valocraft to Applications, or
-            extract the `.tar.gz`. The build is unsigned; right-click the app
+          ### Downloads
+
+          | Platform | File |
+          |---|---|
+          | **Windows 10/11 (x86_64)** | [Valocraft-${TAG}-windows-x86_64.zip](${BASE}/Valocraft-${TAG}-windows-x86_64.zip) |
+          | macOS Apple Silicon | [Valocraft-${TAG}-macos-aarch64.dmg](${BASE}/Valocraft-${TAG}-macos-aarch64.dmg) |
+          | macOS Intel | [Valocraft-${TAG}-macos-x86_64.dmg](${BASE}/Valocraft-${TAG}-macos-x86_64.dmg) |
+          | Linux (x86_64) | [Valocraft-${TAG}-linux-x86_64.tar.gz](${BASE}/Valocraft-${TAG}-linux-x86_64.tar.gz) |
+          | Checksums | [SHA256SUMS.txt](${BASE}/SHA256SUMS.txt) |
+
+          > Download the game archive for your platform from the table above —
+          > **not** GitHub's \`Source code (zip)\`.
+
+          - **Windows:** extract the \`.zip\`, then run \`run.bat\`. If the
+            browser or SmartScreen warns about an uncommon unsigned download,
+            choose **Keep** / **More info → Run anyway**. Verify the SHA-256
+            hash against \`SHA256SUMS.txt\` if unsure.
+          - **macOS:** open the \`.dmg\` and drag Valocraft to Applications, or
+            extract the \`.tar.gz\`. The build is unsigned; right-click the app
             and choose **Open** the first time.
-          - **Linux:** extract the `.tar.gz`, then run `./run.sh`.
+          - **Linux:** extract the \`.tar.gz\`, then run \`./run.sh\`.
 
           The full platform notes, runtime packages, build instructions, and
-          troubleshooting steps are in [`RUNNING.md`](https://github.com/nAItiklearn/valocraft/blob/main/RUNNING.md).
-
-          Android and iOS are not available yet. See
-          [`MOBILE.md`](https://github.com/nAItiklearn/valocraft/blob/main/MOBILE.md)
-          for the porting plan.
+          troubleshooting steps are in [\`RUNNING.md\`](https://github.com/nAItiklearn/valocraft/blob/main/RUNNING.md).
           EOF
+          } > release-notes.md
 
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" dist/* --clobber
@@ -302,6 +325,12 @@ jobs:
             gh release create "$TAG" dist/* "${create_args[@]}"
           fi
 
+          # A tag-triggered desktop release is the primary download; make sure
+          # it is presented as the latest release.
+          if [ "$PRERELEASE" != "true" ]; then
+            gh release edit "$TAG" --latest
+          fi
+
       - name: Verify published release assets
         shell: bash
         env:
@@ -314,7 +343,7 @@ jobs:
           grep -qi 'linux' published-assets.txt
           grep -qi 'macos.*aarch64' published-assets.txt
 
-      - name: Remove stale empty releases
+      - name: Remove stale and non-desktop releases
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -326,3 +355,6 @@ jobs:
               gh release delete "$old" --yes 2>/dev/null || true
             fi
           done
+          # Valocraft is desktop-only. Remove the experimental Android release
+          # so players can no longer download the wrong variant.
+          gh release delete android-v0.1.2 --yes --cleanup-tag 2>/dev/null || true

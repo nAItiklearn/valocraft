@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Guide — Valocraft</title>
+  <meta name="description" content="The complete Valocraft player guide: getting started, controls, combat, crafting, Emberwatch contracts, and multiplayer servers.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <img src="images/logo.svg" alt="Valocraft logo" class="nav-logo-img">
+        <span>Valocraft</span>
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">&#9776;</button>
+      <nav class="nav-links" aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="download.html">Download</a>
+        <a href="guide.html" class="active">Game Guide</a>
+        <a href="https://github.com/nAItiklearn/valocraft" target="_blank" rel="noopener">GitHub</a>
+        <a href="download.html" class="btn btn-primary btn-nav">Download</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="guide">
+    <section class="page-hero">
+      <h1>Game Guide</h1>
+      <p>Everything you need to start playing Valocraft &mdash; offline-first, no account required.</p>
+    </section>
+
+    <section class="section guide-section">
+      <h2>Getting started</h2>
+      <ol>
+        <li><a href="download.html">Download</a> and extract the archive for your platform.</li>
+        <li>Launch <code>run.bat</code> (Windows), <code>Valocraft.app</code> (macOS), or <code>./run.sh</code> (Linux).</li>
+        <li>The game boots straight into an offline singleplayer world as the profile <code>Player</code>. A world and character are created automatically on first launch.</li>
+      </ol>
+      <p>No account, internet connection, or server setup is required for local play.</p>
+    </section>
+
+    <section class="section guide-section">
+      <h2>Emberwatch contracts</h2>
+      <p>Press <kbd>U</kbd> to open the <strong>Emberwatch Field Journal</strong>. Near the
+      Hearthpost Ember Board you can accept three kinds of contracts:</p>
+      <ul>
+        <li><strong>Survey</strong> &mdash; travel to a marked site and scout it.</li>
+        <li><strong>Bounty</strong> &mdash; hunt down a marked target.</li>
+        <li><strong>Courier</strong> &mdash; carry word to a relay and return.</li>
+      </ul>
+      <p>Objectives are tracked on the HUD and marked on the map and minimap. Completed
+      contracts award coins and Emberwatch standing. After three contracts, return to the
+      board to light the <strong>Emberwatch Beacon</strong> for a bonus reward. Standing,
+      completion count, and the beacon are saved in your profile.</p>
+    </section>
+
+    <section class="section guide-section">
+      <h2>Exploration</h2>
+      <ul>
+        <li>Biomes: forests, grasslands, deserts, mountains, snowfields, oceans, rivers, lakes, and caves.</li>
+        <li>Points of interest: towns, villages, dungeons, ruins, camps, and landmarks.</li>
+        <li>Dynamic day/night cycle, weather, and a full world map (<kbd>M</kbd>) with markers.</li>
+        <li>Climb, swim, glide (<kbd>Ctrl</kbd>), and tame mounts (<kbd>F</kbd>) to travel faster.</li>
+      </ul>
+    </section>
+
+    <section class="section guide-section">
+      <h2>Combat</h2>
+      <ul>
+        <li><strong>Melee:</strong> swords, axes, hammers, and shields. Block, dodge, roll, and use weapon abilities.</li>
+        <li><strong>Ranged:</strong> bows and thrown weapons.</li>
+        <li><strong>Magic:</strong> staffs and spells.</li>
+        <li>Enemies: wildlife, hostile factions, monsters, and dungeon bosses.</li>
+      </ul>
+      <p>Early-game combat is intentionally forgiving: players take reduced incoming damage
+      while they learn the ropes. A small FPS/frame-time readout sits at the top of the
+      screen so you can gauge performance.</p>
+    </section>
+
+    <section class="section guide-section">
+      <h2>Character &amp; progression</h2>
+      <ul>
+        <li>Multiple playable races with appearance customization.</li>
+        <li>Earn XP, level up, and unlock skills.</li>
+        <li>Equip weapons, armor, bags, gliders, lanterns, and modular gear.</li>
+        <li>Find loot and improve item quality to tailor your build.</li>
+      </ul>
+    </section>
+
+    <section class="section guide-section">
+      <h2>Crafting, cooking &amp; trading</h2>
+      <ul>
+        <li>Craft at workbenches and specialized crafting stations.</li>
+        <li>Make weapons, armor, tools, gliders, lanterns, and bags.</li>
+        <li>Cook food and brew potions.</li>
+        <li>Trade with NPC merchants using in-game currency; grow your recipe book as you discover recipes.</li>
+      </ul>
+    </section>
+
+    <section class="section guide-section">
+      <h2>Multiplayer &amp; dedicated servers</h2>
+      <p>Valocraft has <strong>no central account service</strong>. Every server is
+      independent and manages its own players:</p>
+      <ul>
+        <li>Start the included dedicated server (<code>run-server.bat</code> / <code>run-server.sh</code>, or <code>ValocraftServer</code>). The default game port is <strong>14004</strong>.</li>
+        <li>Connect from the client&rsquo;s multiplayer menu using the server&rsquo;s address. The first client launch auto-boots into singleplayer; log out to the main menu to reach the server browser.</li>
+        <li><strong>Most servers need no account:</strong> pick a username and play.</li>
+        <li><strong>Servers with authentication</strong> run their own self-hosted auth service; the server owner tells you where to register. You only trust the auth endpoints you choose in Settings &rarr; Network.</li>
+      </ul>
+
+      <h3>Running your own server</h3>
+      <ol>
+        <li>Every desktop download includes <code>ValocraftServer</code>.</li>
+        <li>Launch it once to generate configuration and saves under <code>userdata/server/</code>.</li>
+        <li>Local and private servers run without remote authentication out of the box.</li>
+        <li>To let friends join over the internet, forward port 14004 (TCP/UDP) on your router/firewall and share your public address.</li>
+        <li>Server-side plugins and game rules are configurable in the server settings files.</li>
+      </ol>
+    </section>
+
+    <section class="section guide-section">
+      <h2>Controls (desktop)</h2>
+      <table class="controls-table">
+        <thead><tr><th>Action</th><th>Default</th></tr></thead>
+        <tbody>
+          <tr><td>Move</td><td><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd></td></tr>
+          <tr><td>Look</td><td>Mouse</td></tr>
+          <tr><td>Attack / use</td><td>Left mouse</td></tr>
+          <tr><td>Secondary / block</td><td>Right mouse</td></tr>
+          <tr><td>Jump</td><td><kbd>Space</kbd></td></tr>
+          <tr><td>Sneak</td><td><kbd>Shift</kbd></td></tr>
+          <tr><td>Glide</td><td><kbd>Ctrl</kbd></td></tr>
+          <tr><td>Interact</td><td><kbd>E</kbd></td></tr>
+          <tr><td>Inventory</td><td><kbd>I</kbd></td></tr>
+          <tr><td>Crafting</td><td><kbd>C</kbd></td></tr>
+          <tr><td>Map</td><td><kbd>M</kbd></td></tr>
+          <tr><td>Field Journal</td><td><kbd>U</kbd></td></tr>
+          <tr><td>Mount</td><td><kbd>F</kbd></td></tr>
+          <tr><td>Lantern</td><td><kbd>G</kbd></td></tr>
+          <tr><td>Chat</td><td><kbd>Enter</kbd></td></tr>
+          <tr><td>Command</td><td><kbd>/</kbd></td></tr>
+          <tr><td>Menu</td><td><kbd>Esc</kbd></td></tr>
+          <tr><td>Controls</td><td><kbd>F1</kbd></td></tr>
+          <tr><td>Settings</td><td><kbd>F10</kbd></td></tr>
+          <tr><td>Fullscreen</td><td><kbd>F11</kbd></td></tr>
+          <tr><td>Screenshot</td><td><kbd>F4</kbd></td></tr>
+          <tr><td>Toggle UI</td><td><kbd>F6</kbd></td></tr>
+        </tbody>
+      </table>
+      <p>All bindings can be changed in <strong>Settings &rarr; Controls</strong>.</p>
+    </section>
+
+    <section class="section guide-section">
+      <h2>Where saves live</h2>
+      <ul>
+        <li><strong>Windows / Linux (release):</strong> <code>userdata/</code> beside the game binary.</li>
+        <li><strong>macOS:</strong> <code>~/Library/Application Support/Valocraft/userdata/</code></li>
+      </ul>
+      <p>You can move the whole folder to another computer &mdash; the game is portable.</p>
+    </section>
+
+    <section class="section guide-section">
+      <h2>Troubleshooting</h2>
+      <ul>
+        <li><strong>Assets missing:</strong> extract the full archive; the game needs the <code>assets/</code> folder next to it.</li>
+        <li><strong>Windows SmartScreen:</strong> More info &rarr; Run anyway (build is not code-signed yet).</li>
+        <li><strong>Missing VCRUNTIME140.dll:</strong> install the <a href="https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist" target="_blank" rel="noopener">Microsoft Visual C++ Redistributable (x64)</a>.</li>
+        <li><strong>macOS &ldquo;app is damaged&rdquo;:</strong> <code>xattr -dr com.apple.quarantine /Applications/Valocraft.app</code>, then right-click &rarr; Open.</li>
+        <li><strong>No rendering device:</strong> update your GPU drivers; a Vulkan, DirectX 12, Metal, or OpenGL-capable GPU is required.</li>
+        <li><strong>Logs:</strong> see <code>userdata/voxygen/logs/</code>.</li>
+      </ul>
+    </section>
+
+    <section class="section guide-section">
+      <h2>Status &amp; roadmap</h2>
+      <p>Valocraft is in <strong>alpha</strong>: systems may change, saves may be
+      incompatible between versions, and bugs are expected. On the roadmap:
+      survival-style block building, more dungeons and quests, continued balance, and
+      Windows-first packaging improvements.</p>
+      <p><a class="btn btn-primary" href="download.html">Download Valocraft</a></p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-col">
+        <h4>Valocraft</h4>
+        <a href="index.html">About</a>
+        <a href="guide.html">Game Guide</a>
+        <a href="download.html">Download</a>
+        <a href="https://github.com/nAItiklearn/valocraft/releases" target="_blank" rel="noopener">Releases</a>
+      </div>
+      <div class="footer-col">
+        <h4>Community</h4>
+        <a href="https://github.com/nAItiklearn/valocraft" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://github.com/nAItiklearn/valocraft/issues" target="_blank" rel="noopener">Issues</a>
+        <a href="https://github.com/nAItiklearn/valocraft/blob/main/README.md" target="_blank" rel="noopener">Contributing</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="license.html">License (GPLv3)</a>
+        <a href="privacy.html">Privacy Policy</a>
+      </div>
+      <div class="footer-col">
+        <h4>Platforms</h4>
+        <span>Windows</span>
+        <span>macOS</span>
+        <span>Linux</span>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>Valocraft v0.1.3 &middot; Free &amp; open source (GPLv3) &middot; Based on <a href="https://veloren.net" target="_blank" rel="noopener">Project Veloren</a></p>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

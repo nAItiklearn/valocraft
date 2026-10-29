@@ -131,6 +131,7 @@ pub struct Map<'a> {
     location_markers: &'a MapMarkers,
     map_drag: Vec2<f64>,
     extra_markers: &'a [ExtraMarker],
+    contract_markers: &'a [ExtraMarker],
 }
 impl<'a> Map<'a> {
     pub fn new(
@@ -146,6 +147,7 @@ impl<'a> Map<'a> {
         location_markers: &'a MapMarkers,
         map_drag: Vec2<f64>,
         extra_markers: &'a [ExtraMarker],
+        contract_markers: &'a [ExtraMarker],
     ) -> Self {
         Self {
             imgs,
@@ -161,6 +163,7 @@ impl<'a> Map<'a> {
             location_markers,
             map_drag,
             extra_markers,
+            contract_markers,
         }
     }
 }
@@ -952,6 +955,7 @@ impl Widget for Map<'_> {
             .client
             .markers()
             .chain(self.extra_markers.iter().map(|em| &em.marker))
+            .chain(self.contract_markers.iter().map(|em| &em.marker))
             .collect::<Vec<_>>();
 
         if state.ids.mmap_site_icons.len() < markers.len() {

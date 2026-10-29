@@ -13,7 +13,7 @@ main-notice =
 
     - This is a very early alpha. Expect bugs, extremely unfinished gameplay, unpolished mechanics, and missing features.
 
-    - If you have constructive feedback or bug reports, you can contact us on our GitLab repository and on our Discord or Matrix server.
+    - If you have constructive feedback or bug reports, open an issue on our GitHub repository: https://github.com/nAItiklearn/valocraft
 
     - Valocraft is open source. You are free to play, modify, and redistribute the game in accordance to version 3 of the GNU General Public license.
 
@@ -26,10 +26,10 @@ main-notice =
 main-login_process =
     About multiplayer mode:
 
-    Please note that you need an account to play on servers with authentication enabled.
+    Valocraft has no central account service. Each server manages its own players.
 
-    You can create an account at:
-    https://veloren.net/account/
+    - Most community and private servers need no account: pick a username and play.
+    - Servers with authentication enabled use their own self-hosted auth service. The server owner tells you where to register.
 main-singleplayer-new = New
 main-singleplayer-delete = Delete
 main-singleplayer-regenerate = Regenerate

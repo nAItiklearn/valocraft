@@ -28,7 +28,6 @@ pub struct Screen {
     quit_button: button::State,
     // settings_button: button::State,
     servers_button: button::State,
-    credits_button: button::State,
     language_select_button: button::State,
 
     error_okay_button: button::State,
@@ -77,13 +76,6 @@ impl Screen {
                 FILL_FRAC_ONE,
                 button_style,
                 Some(Message::OpenLanguageMenu),
-            ),
-            neat_button(
-                &mut self.credits_button,
-                i18n.get_msg("main-credits"),
-                FILL_FRAC_ONE,
-                button_style,
-                Some(Message::ShowCredits),
             ),
             neat_button(
                 &mut self.quit_button,
@@ -184,16 +176,17 @@ impl Screen {
             .center_x()
             .center_y();
 
-        let v_logo = Container::new(Image::new(imgs.v_logo).fix_aspect_ratio())
-            .padding(3)
-            .width(Length::Units(230));
+        // Valocraft is its own game: show the title as text instead of the
+        // upstream Veloren logo image.
+        let title = Text::new("Valocraft").size(fonts.cyri.scale(48));
 
         let version_stage =
             Text::new(common::util::VELOREN_VERSION_STAGE).size(fonts.cyri.scale(22));
 
         let right_column = Container::new(
-            Column::with_children(vec![v_logo.into(), version_stage.into()])
-                .align_items(Align::Center),
+            Column::with_children(vec![title.into(), version_stage.into()])
+                .align_items(Align::Center)
+                .spacing(6),
         )
         .width(Length::Fill)
         .height(Length::Fill)

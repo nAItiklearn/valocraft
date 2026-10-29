@@ -244,6 +244,7 @@ impl ControlSettings {
             GameInput::Social => char("O"),
             GameInput::Crafting => char("C"),
             GameInput::Diary => char("P"),
+            GameInput::Contracts => char("U"),
             GameInput::Settings => Key::Named(NamedKey::F10),
             GameInput::Controls => Key::Named(NamedKey::F1),
             GameInput::ToggleInterface => Key::Named(NamedKey::F2),

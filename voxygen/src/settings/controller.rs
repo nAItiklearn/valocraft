@@ -474,6 +474,7 @@ impl ControllerSettings {
             GameInput::Social => Some(Button::Simple(GilButton::DPadLeft)),
             GameInput::Crafting => Some(Button::Simple(GilButton::Unknown)),
             GameInput::Diary => Some(Button::Simple(GilButton::Unknown)),
+            GameInput::Contracts => Some(Button::Simple(GilButton::Unknown)),
             GameInput::Settings => Some(Button::Simple(GilButton::Unknown)),
             GameInput::Controls => Some(Button::Simple(GilButton::Unknown)),
             GameInput::ToggleInterface => Some(Button::Simple(GilButton::Unknown)),
@@ -737,6 +738,11 @@ impl ControllerSettings {
                 mod2: Button::Simple(GilButton::Unknown),
             }),
             GameInput::Diary => Some(LayerEntry {
+                button: Button::Simple(GilButton::Unknown),
+                mod1: Button::Simple(GilButton::Unknown),
+                mod2: Button::Simple(GilButton::Unknown),
+            }),
+            GameInput::Contracts => Some(LayerEntry {
                 button: Button::Simple(GilButton::Unknown),
                 mod1: Button::Simple(GilButton::Unknown),
                 mod2: Button::Simple(GilButton::Unknown),

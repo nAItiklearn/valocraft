@@ -316,7 +316,7 @@ Local notes / deviations:
 
 ---
 
-## 8. Desktop releases and mobile status
+## 8. Desktop releases
 
 ### Desktop release pipeline
 
@@ -339,20 +339,17 @@ Local notes / deviations:
 - The CI installs the pinned nightly via `rustup`, CMake 3.31.8, Ninja, and the
   platform build dependencies. `VELOREN_USERDATA_STRATEGY=executable` keeps the
   packages portable.
+- The publish job generates `SHA256SUMS.txt` for all archives, writes release
+  notes with a per-platform direct-download table (players should use those
+  links, not GitHub's `Source code (zip)`), and marks tag-triggered releases as
+  **latest**. It also deletes the retired `android-v0.1.2` release and the
+  stale `v0.1.0`/`v0.1.1` releases.
 - `RUNNING.md` is the player-facing per-platform guide (download, runtime
   packages, Gatekeeper, Windows VC++ runtime, source build, troubleshooting).
 - `RELEASING.md` documents the tag/manual-dispatch process and post-run checks.
-- The workflow is new; the first real tag build should be treated as a CI smoke
-  test and its platform logs reviewed before announcing downloads broadly.
 
-### Mobile
+### Supported platforms
 
-- Android and iOS are **not supported yet**. There is no mobile entry point,
-  touch-control layout, mobile storage integration, or signed mobile package.
-- `MOBILE.md` records the blockers and a phased porting plan.
-- Android is the more tractable first target: `winit`/`wgpu` have Android
-  backends, but the app needs `android_main`, NDK packaging, asset extraction,
-  touch controls, lifecycle handling, and performance presets.
-- iOS additionally needs an Xcode target, Apple signing certificates, and a
-  paid Apple Developer account for any broadly installable IPA.
-- Do not market the desktop archives as mobile-ready.
+Valocraft currently targets desktop platforms only: Windows x86_64 first, plus
+Linux x86_64 and macOS. There is no supported phone/tablet client or package in
+this repository.

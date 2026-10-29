@@ -34,13 +34,10 @@ pub fn set_panic_hook(log_filename: String, logs_dir: PathBuf) {
                 format!("> What should I do?\n\
             \n\
             We need your help to fix this! You can help by contacting us and \
-            reporting this problem. To do this, open an issue on the Veloren \
+            reporting this problem. To do this, open an issue on the Valocraft \
             issue tracker:\n\
             \n\
-            https://www.gitlab.com/veloren/veloren/issues/new\n\
-            \n\
-            If you're on the Veloren community Discord server, we'd be \
-            grateful if you could also post a message in the #support channel.
+            https://github.com/nAItiklearn/valocraft/issues/new\n\
             \n\
             > What should I include?\n\
             \n\

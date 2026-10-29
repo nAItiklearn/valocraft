@@ -91,6 +91,8 @@ pub enum GameInput {
     Crafting,
     #[strum(serialize = "gameinput-diary")]
     Diary,
+    #[strum(serialize = "gameinput-contracts")]
+    Contracts,
     #[strum(serialize = "gameinput-chat")]
     Chat,
     #[strum(serialize = "gameinput-social")]

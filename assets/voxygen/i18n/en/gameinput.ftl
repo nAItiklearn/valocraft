@@ -45,6 +45,7 @@ gameinput-social = Social
 gameinput-sit = Sit
 gameinput-crawl = Crawl
 gameinput-diary = Diary
+gameinput-contracts = Field Journal
 gameinput-settings = Settings
 gameinput-giveup = Give Up
 gameinput-respawn = Respawn

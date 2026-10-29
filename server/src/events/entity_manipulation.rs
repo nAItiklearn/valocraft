@@ -219,6 +219,7 @@ pub struct HealthChangeEventData<'a> {
     #[cfg(feature = "worldgen")]
     rtsim_actors: ReadStorage<'a, rtsim::ActorId>,
     inventories: ReadStorage<'a, Inventory>,
+    players: ReadStorage<'a, Player>,
     agents: WriteStorage<'a, Agent>,
     healths: WriteStorage<'a, Health>,
     heads: WriteStorage<'a, Heads>,
@@ -230,7 +231,14 @@ impl ServerEvent for HealthChangeEvent {
     fn handle(events: impl ExactSizeIterator<Item = Self>, mut data: Self::SystemData<'_>) {
         let mut emitters = data.events.get_emitters();
         let mut rng = rand::rng();
-        for ev in events {
+        for mut ev in events {
+            // Valocraft's opening combat is intentionally more forgiving than
+            // upstream Veloren. Give players effective bonus health without
+            // also making humanoid NPCs tougher to fight.
+            if ev.change.amount < 0.0 && data.players.contains(ev.entity) {
+                ev.change.amount *= 0.5;
+            }
+
             if let Some((mut health, inventory, pos, uid, heads)) = (
                 &mut data.healths,
                 data.inventories.maybe(),

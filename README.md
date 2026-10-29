@@ -17,22 +17,20 @@ Prebuilt desktop builds are published on the
 
 | Platform | Download | Launcher |
 |---|---|---|
-| Windows 10/11 (x86_64) | `.zip` | `run.bat` |
+| **Windows 10/11 (x86_64)** | [Valocraft-v0.1.3-windows-x86_64.zip](https://github.com/nAItiklearn/valocraft/releases/download/v0.1.3/Valocraft-v0.1.3-windows-x86_64.zip) | `run.bat` |
 | macOS (Apple Silicon) | `.dmg` / `.tar.gz` | `Valocraft.app` |
 | macOS (Intel) | `.dmg` / `.tar.gz` | `Valocraft.app` |
 | Linux (x86_64) | `.tar.gz` | `./run.sh` |
-| Android 8+ (arm64, experimental) | `.apk` | install manually |
 
-Each archive is self-contained: it includes the client, the optional dedicated
-server, all game assets, and the player documentation. Extract the whole archive
-and use the launcher inside it. Platform-specific runtime packages, Gatekeeper
-notes, and troubleshooting are in [`RUNNING.md`](RUNNING.md).
+Each desktop archive is self-contained: it includes the client, the optional
+dedicated server, all game assets, and the player documentation. Extract the
+whole archive and use the launcher inside it. Platform-specific runtime
+packages, Gatekeeper notes, Windows browser/SmartScreen guidance, and
+troubleshooting are in [`RUNNING.md`](RUNNING.md).
 
-> **Mobile (experimental):** An arm64 Android APK is available on the
-> [Android release](https://github.com/nAItiklearn/valocraft/releases/tag/android-v0.1.2).
-> It is debug-signed for sideloading, uses touch controls, and still needs testing
-> on physical devices. iPhone/iPad builds are not available; Apple signing and a
-> Mac are required. See [`MOBILE.md`](MOBILE.md).
+If the Windows download is blocked because the build is unsigned, choose
+**Keep** / **Download anyway** in the browser, verify the SHA-256 checksum on
+the release page, extract the full `.zip`, and run `run.bat`.
 
 ---
 
@@ -71,16 +69,26 @@ notes, and troubleshooting are in [`RUNNING.md`](RUNNING.md).
 - Full survival-style block building, block items, and workbench recipes are in
   development. See [`VOXEL_BUILDING_PLAN.md`](VOXEL_BUILDING_PLAN.md).
 
+### Take Emberwatch contracts
+- Accept Survey, Bounty, and Courier contracts from the Hearthpost Ember Board.
+- Track objectives on the HUD and the world map, and review them anytime in the
+  **Field Journal** (`U`).
+- Earn coins and Emberwatch standing; after three contracts, light the
+  Emberwatch Beacon for a bonus reward.
+
 ### Play solo or together
 - **Offline singleplayer** with automatic boot: launch the client and you are in the
   world — no account, login form, or server selection.
-- Dedicated multiplayer servers.
-- Optional account authentication for public servers.
+- Dedicated multiplayer servers — every server is independent; there is no
+  central account service.
+- Optional per-server, self-hosted authentication.
 - Server-side plugins and configurable game rules.
 
 ### Quality of life
 - Configurable keyboard, mouse, and gamepad bindings.
 - Adjustable graphics, audio, UI scale, and camera options.
+- Built-in FPS and frame-time readout (top of the screen).
+- Gentler early-game combat: players take reduced incoming damage.
 - Localization support.
 - Original soundtrack and ambient audio.
 - Screenshots, map markers, and a full in-game diary.
@@ -120,6 +128,7 @@ notes, and troubleshooting are in [`RUNNING.md`](RUNNING.md).
 | Inventory | `I` |
 | Crafting | `C` |
 | Map | `M` |
+| Field Journal | `U` |
 | Mount | `F` |
 | Lantern | `G` |
 | Chat | `Enter` |
@@ -153,8 +162,9 @@ The full per-platform instructions are in [`RUNNING.md`](RUNNING.md).
 Start the dedicated server (`run-server.bat`, `ValocraftServer`, or
 `run-server.sh`), then connect from the client's multiplayer menu. The first
 launch auto-boots into singleplayer; log out to the main menu to use the
-multiplayer browser. Public servers may require an account; local and private
-servers can run without authentication.
+multiplayer browser. Valocraft has no central account service: servers are
+account-free by default, and server owners can run their own self-hosted
+authentication if they want it.
 
 ---
 
@@ -190,7 +200,7 @@ release with [`RELEASING.md`](RELEASING.md).
 - More adventure content, dungeons, quests, and world events.
 - Continued combat, crafting, and progression balance.
 - More UI polish, accessibility, and desktop packaging.
-- Android port (experimental) and iOS port (see [`MOBILE.md`](MOBILE.md)).
+- Windows-first packaging and installer improvements.
 
 ---
 

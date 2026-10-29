@@ -53,6 +53,9 @@ release run.
 - Make sure `assets/` contains real files, not LFS pointers. The canary must start
   with `VELOREN_CANARY_MAGIC`.
 - Update `README.md`, `RUNNING.md`, and the version notes if needed.
+- Bump the version string in `website/` (search for the old tag, e.g. `v0.1.3`,
+  across `website/*.html`) — see `website/README.md`. The site redeploys to
+  GitHub Pages automatically on push.
 - Commit everything and push `main` to the GitHub remote.
 - If the release is intended to be stable, set the prerelease input to false.
 
@@ -98,26 +101,11 @@ is the distribution version; the binaries still report their compiled version.
 Use a new tag for every release. Do not reuse a published tag for a different
 build.
 
-## Android
+## Windows download reliability
 
-The experimental Android build is separate from the desktop release workflow and
-is kept on the `android-port` branch. It uses
-`.github/workflows/android-release.yml` there and publishes a separate release
-tag named `android-v*`, for example `android-v0.1.2`.
-
-```bash
-git checkout android-port
-git tag -a android-v0.1.2 -m "Valocraft Android v0.1.2 experimental build"
-git push github android-v0.1.2
-```
-
-The workflow builds an arm64-v8a APK, verifies that the real game assets and the
-native library are packaged, signs it, and uploads the APK plus a SHA-256 checksum.
-The APK is signed with a debug key for sideload testing unless the repository has
-the `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, and
-`ANDROID_KEY_ALIAS` Actions secrets configured. A public release needs a dedicated
-signing key; do not put a keystore in the repository. Android release builds use
-the `android-port` branch's own workflow and do not modify the desktop release.
-
-iOS is not part of either workflow. A real iPhone build requires Apple developer
-signing/provisioning and a macOS runner; see [`MOBILE.md`](MOBILE.md).
+The Windows package is the first-class download. The release must contain the
+archive named `Valocraft-<tag>-windows-x86_64.zip` and a `SHA256SUMS.txt` file.
+Players should download that game archive, not GitHub's `Source code (zip)`.
+The release notes should link directly to the Windows archive and explain that
+browsers may show a **Keep** / **Download anyway** prompt because the build is
+not code-signed yet.

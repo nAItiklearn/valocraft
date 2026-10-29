@@ -753,11 +753,11 @@ fn handle_wiki(
     args: Vec<String>,
 ) -> CommandResult {
     let url = if args.is_empty() {
-        "https://wiki.veloren.net/".to_string()
+        "https://github.com/nAItiklearn/valocraft#readme".to_string()
     } else {
         let query_string = args.join("+");
 
-        format!("https://wiki.veloren.net/w/index.php?search={query_string}")
+        format!("https://github.com/search?q=repo%3AnAItiklearn%2Fvalocraft+{query_string}&type=code")
     };
 
     open::that_detached(url)

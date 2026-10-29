@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Download Valocraft — Windows, macOS, Linux</title>
+  <meta name="description" content="Download Valocraft for Windows, macOS, and Linux. Free and open source. Each archive includes the client, dedicated server, assets, and documentation.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <img src="images/logo.svg" alt="Valocraft logo" class="nav-logo-img">
+        <span>Valocraft</span>
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">&#9776;</button>
+      <nav class="nav-links" aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="download.html" class="active">Download</a>
+        <a href="guide.html">Game Guide</a>
+        <a href="https://github.com/nAItiklearn/valocraft" target="_blank" rel="noopener">GitHub</a>
+        <a href="download.html" class="btn btn-primary btn-nav">Download</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="page-hero">
+      <h1>Download Valocraft</h1>
+      <p>Free and open source. Choose your platform. Each archive is self-contained and
+      includes the game, the optional dedicated server, all assets, and documentation.</p>
+      <p class="hero-version">Latest release: <strong>v0.1.3</strong> &middot;
+      <a href="https://github.com/nAItiklearn/valocraft/releases" target="_blank" rel="noopener">All releases</a></p>
+    </section>
+
+    <section class="section">
+      <div class="card-grid card-grid-2">
+
+        <article class="card download-card featured">
+          <div class="card-body">
+            <div class="download-card-head">
+              <h3>Windows 10/11 <small>(x86_64)</small></h3>
+              <span class="chip chip-ok">Recommended</span>
+            </div>
+            <p class="file-name">Valocraft-v0.1.3-windows-x86_64.zip</p>
+            <ul>
+              <li>Launcher: <code>run.bat</code></li>
+              <li>Requires: 64-bit Windows, Vulkan/DX12/OpenGL GPU</li>
+              <li>May need the Visual C++ Redistributable if DLL errors appear</li>
+            </ul>
+            <a class="btn btn-primary" href="https://github.com/nAItiklearn/valocraft/releases/download/v0.1.3/Valocraft-v0.1.3-windows-x86_64.zip">Download for Windows</a>
+            <p class="note">Not code-signed yet &mdash; your browser may ask you to
+            <strong>Keep</strong> the file and SmartScreen may show
+            <strong>More info &rarr; Run anyway</strong>. Verify the SHA-256 against
+            <code>SHA256SUMS.txt</code> on the release page if unsure.</p>
+          </div>
+        </article>
+
+        <article class="card download-card">
+          <div class="card-body">
+            <div class="download-card-head">
+              <h3>macOS <small>Apple Silicon (M1&ndash;M4)</small></h3>
+              <span class="chip chip-ok">Available</span>
+            </div>
+            <p class="file-name">Valocraft-v0.1.3-macos-aarch64.dmg</p>
+            <ul>
+              <li>Launcher: <code>Valocraft.app</code></li>
+              <li>Requires: macOS 10.15+, Metal-capable GPU</li>
+            </ul>
+            <a class="btn btn-primary" href="https://github.com/nAItiklearn/valocraft/releases/download/v0.1.3/Valocraft-v0.1.3-macos-aarch64.dmg">Download (.dmg)</a>
+            <a class="btn btn-outline" href="https://github.com/nAItiklearn/valocraft/releases/download/v0.1.3/Valocraft-v0.1.3-macos-aarch64.tar.gz">Download (.tar.gz)</a>
+            <p class="note">Not notarized yet &mdash; right-click the app and choose
+            <strong>Open</strong> on first launch.</p>
+          </div>
+        </article>
+
+        <article class="card download-card">
+          <div class="card-body">
+            <div class="download-card-head">
+              <h3>macOS <small>Intel</small></h3>
+              <span class="chip chip-soon">When published</span>
+            </div>
+            <p class="file-name">Valocraft-v0.1.3-macos-x86_64.dmg</p>
+            <ul>
+              <li>Launcher: <code>Valocraft.app</code></li>
+              <li>Requires: macOS 10.15+, Metal-capable GPU</li>
+            </ul>
+            <a class="btn btn-outline" href="https://github.com/nAItiklearn/valocraft/releases">Check releases</a>
+          </div>
+        </article>
+
+        <article class="card download-card">
+          <div class="card-body">
+            <div class="download-card-head">
+              <h3>Linux <small>(x86_64)</small></h3>
+              <span class="chip chip-ok">Available</span>
+            </div>
+            <p class="file-name">Valocraft-v0.1.3-linux-x86_64.tar.gz</p>
+            <ul>
+              <li>Launcher: <code>./run.sh</code></li>
+              <li>Requires: glibc 2.35+, Vulkan/OpenGL driver, standard audio/X11 libs</li>
+              <li>Built on Ubuntu 22.04; very old distros may need a source build</li>
+            </ul>
+            <a class="btn btn-primary" href="https://github.com/nAItiklearn/valocraft/releases/download/v0.1.3/Valocraft-v0.1.3-linux-x86_64.tar.gz">Download for Linux</a>
+          </div>
+        </article>
+      </div>
+
+      <div class="info-box">
+        <h3>Important notes</h3>
+        <ul>
+          <li>Download the game archive for your platform &mdash; <strong>not</strong> GitHub&rsquo;s &ldquo;Source code (zip)&rdquo;.</li>
+          <li>Extract the archive <strong>completely</strong> and launch from inside the extracted folder. Do not run the game from inside the zip.</li>
+          <li>All builds are portable: saves and settings live in <code>userdata/</code> beside the binary.</li>
+          <li>The dedicated server (<code>ValocraftServer</code>) is included in every archive.</li>
+          <li>Verify downloads with <code>SHA256SUMS.txt</code> on the release page.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section section-alt">
+      <h2 class="section-title">Install instructions</h2>
+      <div class="card-grid card-grid-3">
+        <article class="card"><div class="card-body">
+          <h3>Windows</h3>
+          <ol>
+            <li>Download the <code>.zip</code> and choose <strong>Keep</strong> if the browser warns.</li>
+            <li>Right-click &rarr; <strong>Extract All</strong> to e.g. <code>C:\Games\Valocraft</code>.</li>
+            <li>Open the folder and double-click <code>run.bat</code>.</li>
+            <li>SmartScreen: <strong>More info &rarr; Run anyway</strong>.</li>
+          </ol>
+        </div></article>
+        <article class="card"><div class="card-body">
+          <h3>macOS</h3>
+          <ol>
+            <li>Open the <code>.dmg</code> and drag <strong>Valocraft</strong> to Applications.</li>
+            <li>First launch: right-click the app &rarr; <strong>Open</strong> &rarr; confirm.</li>
+            <li>If macOS says the app is damaged: <code>xattr -dr com.apple.quarantine /Applications/Valocraft.app</code></li>
+          </ol>
+        </div></article>
+        <article class="card"><div class="card-body">
+          <h3>Linux</h3>
+          <ol>
+            <li><code>tar -xzf Valocraft-v*-linux-x86_64.tar.gz</code></li>
+            <li><code>cd Valocraft-v*-linux-x86_64</code></li>
+            <li><code>./run.sh</code></li>
+          </ol>
+        </div></article>
+      </div>
+      <p class="section-more">First launch automatically creates a world and boots into
+      offline singleplayer &mdash; no account needed. Full details in the
+      <a href="guide.html">Game Guide</a>.</p>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">Build from source</h2>
+      <div class="info-box">
+        <p>Requirements: Rust (pinned toolchain), Git LFS, CMake, Ninja, and platform build tools.</p>
+        <pre><code>git clone https://github.com/nAItiklearn/valocraft.git
+cd valocraft
+git lfs install &amp;&amp; git lfs pull
+cargo build --release --bin veloren-voxygen</code></pre>
+        <p>Full build instructions:
+        <a href="https://github.com/nAItiklearn/valocraft/blob/main/RUNNING.md" target="_blank" rel="noopener">RUNNING.md</a> &middot;
+        <a href="https://github.com/nAItiklearn/valocraft/blob/main/CODEBASE_INDEX.md" target="_blank" rel="noopener">CODEBASE_INDEX.md</a></p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-col">
+        <h4>Valocraft</h4>
+        <a href="index.html">About</a>
+        <a href="guide.html">Game Guide</a>
+        <a href="download.html">Download</a>
+        <a href="https://github.com/nAItiklearn/valocraft/releases" target="_blank" rel="noopener">Releases</a>
+      </div>
+      <div class="footer-col">
+        <h4>Community</h4>
+        <a href="https://github.com/nAItiklearn/valocraft" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://github.com/nAItiklearn/valocraft/issues" target="_blank" rel="noopener">Issues</a>
+        <a href="https://github.com/nAItiklearn/valocraft/blob/main/README.md" target="_blank" rel="noopener">Contributing</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="license.html">License (GPLv3)</a>
+        <a href="privacy.html">Privacy Policy</a>
+      </div>
+      <div class="footer-col">
+        <h4>Platforms</h4>
+        <span>Windows</span>
+        <span>macOS</span>
+        <span>Linux</span>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>Valocraft v0.1.3 &middot; Free &amp; open source (GPLv3) &middot; Based on <a href="https://veloren.net" target="_blank" rel="noopener">Project Veloren</a></p>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

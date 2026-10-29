@@ -421,6 +421,7 @@ pub struct MiniMap<'a> {
     location_markers: &'a MapMarkers,
     voxel_minimap: &'a VoxelMinimap,
     extra_markers: &'a [super::map::ExtraMarker],
+    contract_markers: &'a [super::map::ExtraMarker],
 }
 
 impl<'a> MiniMap<'a> {
@@ -436,6 +437,7 @@ impl<'a> MiniMap<'a> {
         location_markers: &'a MapMarkers,
         voxel_minimap: &'a VoxelMinimap,
         extra_markers: &'a [super::map::ExtraMarker],
+        contract_markers: &'a [super::map::ExtraMarker],
     ) -> Self {
         Self {
             client,
@@ -450,6 +452,7 @@ impl<'a> MiniMap<'a> {
             location_markers,
             voxel_minimap,
             extra_markers,
+            contract_markers,
         }
     }
 }
@@ -709,6 +712,7 @@ impl Widget for MiniMap<'_> {
                 .client
                 .markers()
                 .chain(self.extra_markers.iter().map(|em| &em.marker))
+                .chain(self.contract_markers.iter().map(|em| &em.marker))
                 .collect::<Vec<_>>();
 
             // Map icons

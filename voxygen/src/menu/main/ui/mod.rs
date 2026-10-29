@@ -2,7 +2,6 @@ mod connecting;
 // Note: Keeping in case we re-add the disclaimer
 //mod disclaimer;
 mod credentials;
-mod credits;
 mod login;
 mod servers;
 #[cfg(feature = "singleplayer")]
@@ -10,7 +9,6 @@ mod world_selector;
 
 use crate::{
     GlobalState,
-    credits::Credits,
     render::UiDrawer,
     ui::{
         self, Graphic,
@@ -26,7 +24,7 @@ use i18n::{LanguageMetadata, LocalizationHandle};
 use iced::{Column, Container, HorizontalAlignment, Length, Row, Space, text_input};
 //ImageFrame, Tooltip,
 use crate::settings::Settings;
-use common::assets::{AssetExt, Image, Ron};
+use common::assets::{AssetExt, Image};
 use rand::{rng, seq::IndexedRandom};
 use std::time::Duration;
 use tracing::warn;
@@ -45,7 +43,6 @@ pub const FILL_FRAC_TWO: f32 = 0.53;
 image_ids_ice! {
     struct Imgs {
         <ImageGraphic>
-        v_logo: "voxygen.element.v_logo",
         bg: "voxygen.background.bg_main",
         banner_top: "voxygen.element.ui.generic.frames.banner_top",
         banner_gradient_bottom: "voxygen.element.ui.generic.frames.banner_gradient_bottom",
@@ -201,9 +198,6 @@ enum Screen {
     /*Disclaimer {
         screen: disclaimer::Screen,
     },*/
-    Credits {
-        screen: credits::Screen,
-    },
     Login {
         screen: Box<login::Screen>, // boxed to avoid large variant
         // Error to display in a box
@@ -246,7 +240,6 @@ pub struct Controls {
     i18n: LocalizationHandle,
     // Voxygen version
     version: String,
-    credits: Credits,
 
     // If a server address was provided via cli argument we hide the server list button and replace
     // the server field with a plain label (with a button to exit this mode and freely edit the
@@ -268,7 +261,6 @@ enum Message {
     Quit,
     Back,
     ShowServers,
-    ShowCredits,
     #[cfg(feature = "singleplayer")]
     Singleplayer,
     #[cfg(feature = "singleplayer")]
@@ -310,8 +302,6 @@ impl Controls {
     ) -> Self {
         let version = format!("Valocraft {}", *common::util::DISPLAY_VERSION);
 
-        let credits = Ron::<Credits>::load_expect_cloned("credits").into_inner();
-
         // Note: Keeping in case we re-add the disclaimer
         let screen = /* if settings.show_disclaimer {
             Screen::Disclaimer {
@@ -349,7 +339,6 @@ impl Controls {
             bg_img,
             i18n,
             version,
-            credits,
 
             server_field_locked,
             selected_server_index,
@@ -405,9 +394,6 @@ impl Controls {
         let content = match &mut self.screen {
             // Note: Keeping in case we re-add the disclaimer
             //Screen::Disclaimer { screen } => screen.view(&self.fonts, &self.i18n, button_style),
-            Screen::Credits { screen } => {
-                screen.view(&self.fonts, &self.i18n.read(), &self.credits, button_style)
-            },
             Screen::Login { screen, error } => screen.view(
                 &self.fonts,
                 &self.imgs,
@@ -490,11 +476,6 @@ impl Controls {
                         screen: servers::Screen::new(),
                     };
                 }
-            },
-            Message::ShowCredits => {
-                self.screen = Screen::Credits {
-                    screen: credits::Screen::new(),
-                };
             },
             #[cfg(feature = "singleplayer")]
             Message::Singleplayer => {

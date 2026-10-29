@@ -12,12 +12,6 @@ Download the archive for your platform, extract it completely, and use the
 launcher inside it. Do not run the client directly from inside the `.zip` or
 `.tar.gz` — it needs the `assets/` folder next to it.
 
-> **Mobile (experimental):** An arm64 Android APK is available on the
-> [Android release](https://github.com/nAItiklearn/valocraft/releases/tag/android-v0.1.2).
-> It is debug-signed for sideloading, uses touch controls, and still needs testing
-> on physical devices. iPhone/iPad builds are not available; Apple signing and a
-> Mac are required. See [`MOBILE.md`](MOBILE.md).
-
 ---
 
 ## What is in the download?
@@ -39,20 +33,37 @@ another computer.
 
 ## Windows 10 / 11
 
-1. Download `Valocraft-v*-windows-x86_64.zip`.
-2. Right-click the zip and choose **Extract All**. Extract it to a normal folder,
-   for example `C:\Games\Valocraft`. Do not run it from the Downloads preview.
-3. Open the extracted folder and double-click `run.bat` (or `Valocraft.exe`).
-4. If Windows SmartScreen appears, choose **More info → Run anyway**. The build is
+1. Download the file named **`Valocraft-v*-windows-x86_64.zip`**, not
+   `Source code (zip)`.
+2. If Chrome, Edge, or another browser warns about an uncommon unsigned download,
+   choose **Keep** / **Download anyway**. Compare the archive's SHA-256 hash with
+   `SHA256SUMS.txt` on the release page before running it.
+3. Right-click the zip and choose **Extract All**. Extract it to a normal folder,
+   for example `C:\Games\Valocraft`. Do not run it from the Downloads preview or
+   from inside the `.zip`.
+4. Open the extracted folder and double-click `run.bat` (or `Valocraft.exe`).
+5. If Windows SmartScreen appears, choose **More info → Run anyway**. The build is
    not code-signed yet.
-5. If Windows reports a missing `VCRUNTIME140.dll` or similar file, install the
+6. If Windows reports a missing `VCRUNTIME140.dll` or similar file, install the
    [Microsoft Visual C++ Redistributable (x64)](https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist)
    and try again.
-6. A Vulkan, DirectX 12, or OpenGL-capable GPU driver is required. Update your
+7. A Vulkan, DirectX 12, or OpenGL-capable GPU driver is required. Update your
    graphics driver if the game cannot find a rendering device.
 
 The first launch creates `userdata\voxygen\` and an offline world. Later launches
 go straight into that world.
+
+### Field Journal and contracts
+
+Press **U** to open the **Emberwatch Field Journal**. Near the Hearthpost Ember
+Board you can accept Survey, Bounty, and Courier contracts; their objectives are
+tracked below the top-centre performance readout and marked on the map/minimap.
+Completed contracts award coins and Emberwatch standing. After three contracts,
+return to the board to light the Emberwatch Beacon. Standing, completion count,
+and the beacon are saved in `profile.ron`.
+
+Player incoming damage is reduced by 50% to make early exploration and hunting
+more forgiving.
 
 To run a dedicated server, double-click `run-server.bat`. The default game port is
 14004. Server settings and saves are created under `userdata\server\`.
@@ -371,8 +382,10 @@ unsigned software, you will need a signed and notarized build.
 
 - Default port: **14004**.
 - The server creates its configuration and saves under `userdata/server/`.
-- Local/private servers can run without remote authentication; public servers may
-  require an account.
+- Valocraft has **no central account service**: servers are account-free by
+  default and manage their own players. Server owners who want authentication
+  run their own auth service and set it in the server settings; players only
+  trust the auth endpoints they add themselves.
 - The client's first launch goes to singleplayer. Log out to the main menu to use
   the multiplayer server browser.
 - For a server on another machine, allow the game port through the firewall and
@@ -383,7 +396,6 @@ unsigned software, you will need a signed and notarized build.
 ## More documentation
 
 - [`README.md`](README.md) — features, activities, and controls
-- [`MOBILE.md`](MOBILE.md) — Android/iOS status and porting plan
 - [`RELEASING.md`](RELEASING.md) — maintainer release workflow
 - [`VOXEL_BUILDING_PLAN.md`](VOXEL_BUILDING_PLAN.md) — block building roadmap
 - [`CODEBASE_INDEX.md`](CODEBASE_INDEX.md) — developer map and build notes

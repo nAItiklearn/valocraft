@@ -62,6 +62,7 @@ pub struct Sounds {
     pub notes: String,
 }
 
+#[expect(dead_code)]
 #[derive(Clone, Deserialize)]
 pub struct Contributor {
     pub name: String,
@@ -72,6 +73,7 @@ pub struct Contributor {
 }
 
 /// Credits manifest processed into format for display in the UI
+#[expect(dead_code)]
 #[derive(Clone, Deserialize)]
 pub struct Credits {
     pub music: Vec<Art>,

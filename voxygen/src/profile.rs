@@ -8,12 +8,28 @@ use std::{
 };
 use tracing::warn;
 
+/// Persistent progress for the Emberwatch contract journal.
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[serde(default)]
+pub struct ContractProgress {
+    /// Total reputation earned with the Emberwatch.
+    pub reputation: u32,
+    /// Number of contracts completed.
+    pub completed: u32,
+    /// Whether the player has founded an Emberwatch beacon.
+    pub world_change: bool,
+    /// World-space (x, y) anchor of the contract board.
+    pub board_anchor: Option<[f32; 2]>,
+}
+
 /// Represents a character in the profile.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
 pub struct CharacterProfile {
     /// Array representing a character's hotbar.
     pub hotbar_slots: [Option<hud::HotbarSlotContents>; 10],
+    /// Emberwatch contract progress.
+    pub contracts: ContractProgress,
 }
 
 const fn default_slots() -> [Option<hud::HotbarSlotContents>; 10] {
@@ -24,6 +40,7 @@ impl Default for CharacterProfile {
     fn default() -> Self {
         CharacterProfile {
             hotbar_slots: default_slots(),
+            contracts: ContractProgress::default(),
         }
     }
 }
@@ -144,6 +161,43 @@ impl Profile {
         .hotbar_slots = slots;
     }
 
+    /// Get the Emberwatch contract progress for the requested character.
+    pub fn get_contract_progress(
+        &self,
+        server: &str,
+        character_id: Option<CharacterId>,
+    ) -> ContractProgress {
+        match character_id {
+            Some(character_id) => self
+                .servers
+                .get(server)
+                .and_then(|s| s.characters.get(&character_id)),
+            None => self.transient_character.as_ref(),
+        }
+        .map(|c| c.contracts.clone())
+        .unwrap_or_default()
+    }
+
+    /// Set the Emberwatch contract progress for the requested character.
+    pub fn set_contract_progress(
+        &mut self,
+        server: &str,
+        character_id: Option<CharacterId>,
+        progress: ContractProgress,
+    ) {
+        match character_id {
+            Some(character_id) => self
+                .servers
+                .entry(server.to_string())
+                .or_default()
+                .characters
+                .entry(character_id)
+                .or_default(),
+            None => self.transient_character.get_or_insert_default(),
+        }
+        .contracts = progress;
+    }
+
     /// Get the selected_character for the provided server.
     ///
     /// if the server does not exist then the default selected_character (None)
@@ -244,5 +298,40 @@ mod tests {
         let mut profile = Profile::default();
         let slots = [(); 10].map(|()| None);
         profile.set_hotbar_slots("TestServer", Some(CharacterId(12345)), slots);
+    }
+
+    #[test]
+    fn contract_progress_round_trips_per_character() {
+        let mut profile = Profile::default();
+        let character = CharacterId(12345);
+        let progress = ContractProgress {
+            reputation: 75,
+            completed: 4,
+            world_change: true,
+            board_anchor: Some([120.5, -42.25]),
+        };
+
+        profile.set_contract_progress("TestServer", Some(character), progress);
+        let saved = profile.get_contract_progress("TestServer", Some(character));
+
+        assert_eq!(saved.reputation, 75);
+        assert_eq!(saved.completed, 4);
+        assert!(saved.world_change);
+        assert_eq!(saved.board_anchor, Some([120.5, -42.25]));
+        assert_eq!(
+            profile
+                .get_contract_progress("OtherServer", Some(character))
+                .completed,
+            0
+        );
+    }
+
+    #[test]
+    fn old_character_profiles_default_contract_progress() {
+        let character: CharacterProfile = ron::from_str("()").unwrap();
+        assert_eq!(character.contracts.reputation, 0);
+        assert_eq!(character.contracts.completed, 0);
+        assert!(!character.contracts.world_change);
+        assert_eq!(character.contracts.board_anchor, None);
     }
 }
