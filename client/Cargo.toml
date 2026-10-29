@@ -80,6 +80,10 @@ client-i18n = { package = "veloren-client-i18n", path = "i18n" }
 name = "chat_cli"
 required-features = ["bin_bot"]
 
+[[example]]
+name = "survival_build_check"
+required-features = ["bin_bot"]
+
 [[bin]]
 name = "bot"
 required-features = ["bin_bot"]
