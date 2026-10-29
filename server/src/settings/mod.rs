@@ -105,13 +105,22 @@ pub struct GameplaySettings {
     #[serde(default)]
     // explosion_burn_marks by players
     pub explosion_burn_marks: bool,
+    /// Allow players to gather terrain into building-block items and place
+    /// them again (survival build mode). Only takes effect when terrain
+    /// persistence is available, otherwise edits would be lost on chunk unload
+    /// and players would lose the consumed blocks.
+    #[serde(default = "default_survival_building")]
+    pub survival_building: bool,
 }
+
+fn default_survival_building() -> bool { true }
 
 impl Default for GameplaySettings {
     fn default() -> Self {
         Self {
             battle_mode: ServerBattleMode::default(),
             explosion_burn_marks: true,
+            survival_building: default_survival_building(),
         }
     }
 }
@@ -310,6 +319,9 @@ impl Settings {
             max_players: 100,
             max_view_distance: None,
             client_timeout: Duration::from_secs(180),
+            // Survival building writes player edits into the world, which only
+            // makes sense if they survive chunk unloads and restarts.
+            experimental_terrain_persistence: true,
             ..load // Fill in remaining fields from server_settings.ron.
         }
     }

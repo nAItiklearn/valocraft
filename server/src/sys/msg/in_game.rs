@@ -11,6 +11,7 @@ use common::{
     link::Is,
     mounting::{Rider, VolumeRider},
     resources::{DeltaTime, PlayerPhysicsSetting, PlayerPhysicsSettings},
+    shared_server_config::ServerConstants,
     slowjob::SlowJobPool,
     terrain::TerrainGrid,
     uid::IdMaps,
@@ -51,6 +52,7 @@ event_emitters! {
         update_map_marker: event::UpdateMapMarkerEvent,
         client_disconnect: event::ClientDisconnectEvent,
         set_battle_mode: event::SetBattleModeEvent,
+        survival_build: event::SurvivalBuildEvent,
     }
 }
 
@@ -78,6 +80,7 @@ impl Sys {
         server_physics_forced: bool,
         maybe_admin: &Option<&Admin>,
         time_for_vd_changes: Instant,
+        survival_building: bool,
         msg: ClientGeneral,
         player_physics: &mut Option<(Pos, Vel, Ori)>,
     ) -> Result<(), crate::error::Error> {
@@ -159,58 +162,44 @@ impl Sys {
                 }
             },
             ClientGeneral::BreakBlock(pos) => {
-                if let Some(comp_can_build) = can_build.get(entity)
-                    && comp_can_build.enabled
-                {
-                    for area in comp_can_build.build_areas.iter() {
-                        if let Some(old_block) = build_areas
-                                .areas()
-                                .get(*area)
-                                // TODO: Make this an exclusive check on the upper bound of the AABB
-                                // Vek defaults to inclusive which is not optimal
-                                .filter(|aabb| aabb.contains_point(pos))
-                                .and_then(|_| terrain.get(pos).ok())
+                if in_creative_build_area(can_build.get(entity), build_areas, pos) {
+                    if let Ok(old_block) = terrain.get(pos) {
+                        let new_block = old_block.into_vacant();
+                        // Take the rare writes lock as briefly as possible.
+                        let mut guard = rare_writes.lock();
+                        let _was_set = guard.block_changes.try_set(pos, new_block).is_some();
+                        #[cfg(feature = "persistent_world")]
+                        if _was_set
+                            && let Some(terrain_persistence) = guard._terrain_persistence.as_mut()
                         {
-                            let new_block = old_block.into_vacant();
-                            // Take the rare writes lock as briefly as possible.
-                            let mut guard = rare_writes.lock();
-                            let _was_set = guard.block_changes.try_set(pos, new_block).is_some();
-                            #[cfg(feature = "persistent_world")]
-                            if _was_set
-                                && let Some(terrain_persistence) =
-                                    guard._terrain_persistence.as_mut()
-                            {
-                                terrain_persistence.set_block(pos, new_block);
-                            }
+                            terrain_persistence.set_block(pos, new_block);
                         }
                     }
+                } else if survival_building && presence.kind.controlling_char() {
+                    emitters.emit(event::SurvivalBuildEvent {
+                        entity,
+                        pos,
+                        action: event::SurvivalBuildAction::Break,
+                    });
                 }
             },
             ClientGeneral::PlaceBlock(pos, new_block) => {
-                if let Some(comp_can_build) = can_build.get(entity)
-                    && comp_can_build.enabled
-                {
-                    for area in comp_can_build.build_areas.iter() {
-                        if build_areas
-                                .areas()
-                                .get(*area)
-                                // TODO: Make this an exclusive check on the upper bound of the AABB
-                                // Vek defaults to inclusive which is not optimal
-                                .filter(|aabb| aabb.contains_point(pos))
-                                .is_some()
-                        {
-                            // Take the rare writes lock as briefly as possible.
-                            let mut guard = rare_writes.lock();
-                            let _was_set = guard.block_changes.try_set(pos, new_block).is_some();
-                            #[cfg(feature = "persistent_world")]
-                            if _was_set
-                                && let Some(terrain_persistence) =
-                                    guard._terrain_persistence.as_mut()
-                            {
-                                terrain_persistence.set_block(pos, new_block);
-                            }
-                        }
+                if in_creative_build_area(can_build.get(entity), build_areas, pos) {
+                    // Take the rare writes lock as briefly as possible.
+                    let mut guard = rare_writes.lock();
+                    let _was_set = guard.block_changes.try_set(pos, new_block).is_some();
+                    #[cfg(feature = "persistent_world")]
+                    if _was_set
+                        && let Some(terrain_persistence) = guard._terrain_persistence.as_mut()
+                    {
+                        terrain_persistence.set_block(pos, new_block);
                     }
+                } else if survival_building && presence.kind.controlling_char() {
+                    emitters.emit(event::SurvivalBuildEvent {
+                        entity,
+                        pos,
+                        action: event::SurvivalBuildAction::Place(new_block),
+                    });
                 }
             },
             ClientGeneral::UnlockSkill(skill) => {
@@ -285,6 +274,27 @@ impl Sys {
     }
 }
 
+/// Whether `pos` lies in one of the creative build areas the entity is
+/// currently permitted (and has chosen) to build in. Edits elsewhere are
+/// handled as survival building, if that is enabled.
+fn in_creative_build_area(
+    can_build: Option<&CanBuild>,
+    build_areas: &AreasContainer<BuildArea>,
+    pos: Vec3<i32>,
+) -> bool {
+    can_build.is_some_and(|can_build| {
+        can_build.enabled
+            && can_build.build_areas.iter().any(|area| {
+                build_areas
+                    .areas()
+                    .get(*area)
+                    // TODO: Make this an exclusive check on the upper bound of the AABB
+                    // Vek defaults to inclusive which is not optimal
+                    .is_some_and(|aabb| aabb.contains_point(pos))
+            })
+    })
+}
+
 /// This system will handle new messages from clients
 #[derive(Default)]
 pub struct Sys;
@@ -296,6 +306,7 @@ impl<'a> System<'a> for Sys {
             ReadExpect<'a, TerrainGrid>,
             ReadExpect<'a, SlowJobPool>,
             ReadExpect<'a, EditableSettings>,
+            ReadExpect<'a, ServerConstants>,
         ),
         (
             Read<'a, IdMaps>,
@@ -334,7 +345,7 @@ impl<'a> System<'a> for Sys {
         (
             entities,
             events,
-            (terrain, slow_jobs, editable_settings),
+            (terrain, slow_jobs, editable_settings, server_constants),
             (id_maps, dt, settings, build_areas),
             can_build,
             mut force_updates,
@@ -437,6 +448,7 @@ impl<'a> System<'a> for Sys {
                             is_server_physics_forced,
                             &maybe_admin,
                             time_for_vd_changes,
+                            server_constants.survival_building,
                             msg,
                             &mut player_physics,
                         )

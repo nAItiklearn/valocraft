@@ -386,9 +386,6 @@ impl Server {
             hardware_threads: num_cpus::get() as u32,
             rayon_threads: num_cpus::get() as u32,
         });
-        state.ecs_mut().insert(ServerConstants {
-            day_cycle_coefficient: settings.day_cycle_coefficient(),
-        });
         state.ecs_mut().insert(Tick(0));
         state.ecs_mut().insert(TickStart(Instant::now()));
         state.ecs_mut().insert(job_metrics);
@@ -419,6 +416,24 @@ impl Server {
                  compiled with the feature. Terrain modifications will *not* be persisted."
             );
         }
+        // Survival building consumes and grants items for terrain edits, so it is
+        // only enabled when those edits are actually persisted.
+        let terrain_is_persisted =
+            cfg!(feature = "persistent_world") && settings.experimental_terrain_persistence;
+        let survival_building = settings.gameplay.survival_building && terrain_is_persisted;
+        if settings.gameplay.survival_building && !terrain_is_persisted {
+            warn!(
+                "Survival building is enabled in the gameplay settings but terrain persistence is \
+                 not active, so it has been disabled. Set `experimental_terrain_persistence: \
+                 true` to use it."
+            );
+        } else if survival_building {
+            info!("Survival building is enabled.");
+        }
+        state.ecs_mut().insert(ServerConstants {
+            day_cycle_coefficient: settings.day_cycle_coefficient(),
+            survival_building,
+        });
         {
             let pool = state.ecs_mut().write_resource::<SlowJobPool>();
             pool.configure("CHUNK_DROP", |_n| 1);

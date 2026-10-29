@@ -18,7 +18,7 @@ use crate::{
     resources::{BattleMode, Secs},
     rtsim,
     states::basic_summon::BeamPillarIndicatorSpecifier,
-    terrain::SpriteKind,
+    terrain::{Block, SpriteKind},
     trade::{TradeAction, TradeId},
     uid::Uid,
     util::Dir,
@@ -492,6 +492,25 @@ pub struct MineBlockEvent {
     pub entity: EcsEntity,
     pub pos: Vec3<i32>,
     pub tool: Option<comp::tool::ToolKind>,
+}
+
+/// What a survival build edit should do with the targeted block.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum SurvivalBuildAction {
+    /// Gather the block into the editor's inventory as a building block.
+    Break,
+    /// Place this voxel, consuming the matching building block item. Must be
+    /// the canonical voxel of a [`comp::item::BuildingBlock`].
+    Place(Block),
+}
+
+/// A block edit requested outside of any creative build area while survival
+/// building is enabled. Validated (reach, protection, tools, inventory) by the
+/// server before it touches the world.
+pub struct SurvivalBuildEvent {
+    pub entity: EcsEntity,
+    pub pos: Vec3<i32>,
+    pub action: SurvivalBuildAction,
 }
 
 pub struct TeleportToEvent {

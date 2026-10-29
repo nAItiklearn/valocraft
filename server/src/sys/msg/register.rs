@@ -52,6 +52,7 @@ pub struct ReadData<'a> {
     #[cfg(feature = "plugins")]
     plugin_mgr: Read<'a, PluginMgr>,
     data_dir: ReadExpect<'a, crate::DataDir>,
+    server_constants: ReadExpect<'a, ServerConstants>,
 }
 
 /// This system will handle new messages from clients
@@ -401,9 +402,7 @@ impl<'a> System<'a> for Sys {
                             component_recipe_book: default_component_recipe_book().cloned(),
                             material_stats: (*read_data.material_stats).clone(),
                             ability_map: (*read_data.ability_map).clone(),
-                            server_constants: ServerConstants {
-                                day_cycle_coefficient: read_data.settings.day_cycle_coefficient(),
-                            },
+                            server_constants: (*read_data.server_constants).clone(),
                             description,
                             active_plugins,
                         })?;

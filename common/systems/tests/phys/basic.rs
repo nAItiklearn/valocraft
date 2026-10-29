@@ -16,6 +16,7 @@ fn simple_run() {
         None,
         &ServerConstants {
             day_cycle_coefficient: 24.0,
+            survival_building: false,
         },
         |_, _| {},
     );

@@ -7,4 +7,7 @@ pub struct ServerConstants {
     /// How many times faster the in-game day/night cycle should be compared to
     /// real time.
     pub day_cycle_coefficient: f64,
+    /// Whether players may gather and place blocks in survival build mode
+    /// (see [`crate::comp::item::BuildingBlock`]).
+    pub survival_building: bool,
 }
