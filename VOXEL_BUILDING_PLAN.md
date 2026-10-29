@@ -15,6 +15,29 @@ The work is therefore mostly about:
 4. Exposing blocks through the existing hotbar/crafting UI.
 5. Adding survival/adventure rules (tools, hardness, drops, progression).
 
+## Implementation status (branch `feature/survival-building`)
+
+Phases 1, 3, 4 and 5 are implemented. The design changed in a few places while
+building it, and the record of what was actually done lives in
+`docs/TECHNICAL_DECISIONS.md` (TD-001). The main differences from this plan:
+
+- **Survival rules instead of granting `CanBuild` (phase 2 dropped).** Players
+  don't get creative build rights. Edits outside creative build areas go
+  through a separate server handler (`server/src/events/building.rs`) when
+  `gameplay.survival_building` is on and terrain persistence is enabled.
+  Creative areas still work as before and take precedence.
+- **One canonical voxel per block item.** `BuildingBlock`
+  (`common/src/comp/inventory/item/building.rs`) is the only lookup table, and
+  `ItemKind::Block(BuildingBlock)` replaces the `BlockItem` struct sketched in
+  1.1. Natural terrain is quantised by `BlockKind`.
+- **Reach** is 6 blocks from the eye to the block centre, plus 1.5 blocks of
+  server tolerance.
+- **Build mode** is toggled with `Z` (`GameInput::ToggleBuildMode`), or by using
+  a block item. It isn't tied to the active hotbar item.
+- **No rate limit yet** (3.4). It is listed as a known limitation.
+- **Phase 6** (adventure mechanics) hasn't been started. The next candidate is
+  room recognition, see `docs/GAME_DESIGN.md`.
+
 ---
 
 ## 0. Existing engine pieces (do not reinvent)

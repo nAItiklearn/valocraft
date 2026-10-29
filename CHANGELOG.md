@@ -47,6 +47,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Overlay tint when game is paused
 - Sfx priority system; more important sfx can override less important ones
 - Added a "Remember password" option to the menu for securely storing login credentials on Linux
+- Survival building: toggle build mode (`Z`) to gather natural terrain into block items and place them again within reach. Rock and ice need a pickaxe, generated sites are protected and edits require terrain persistence (`gameplay.survival_building`, on by default; singleplayer always persists terrain)
+- 11 building blocks (dirt, turf, sand, snow, stone, timber, leaves, ice, planks, stone bricks, clay bricks), with recipes for planks, stone bricks and clay bricks
+- Build mode HUD panel showing the selected block, its count, the controls and why an edit failed
+- `survival_build_check` client example: an end-to-end check of survival building against a running server
 
 ### Changed
 
