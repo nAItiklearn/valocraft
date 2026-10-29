@@ -1467,6 +1467,9 @@ impl Client {
 
     pub fn server_info(&self) -> &ServerInfo { &self.server_info }
 
+    /// Gameplay constants announced by the server when connecting.
+    pub fn server_constants(&self) -> &ServerConstants { &self.connected_server_constants }
+
     pub fn server_description(&self) -> &ServerDescription { &self.server_description }
 
     pub fn world_data(&self) -> &WorldData { &self.world_data }

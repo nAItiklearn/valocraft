@@ -463,6 +463,7 @@ impl ControllerSettings {
             GameInput::Sneak => Some(Button::Simple(GilButton::LeftThumb)),
             GameInput::CancelClimb => Some(Button::Simple(GilButton::East)),
             GameInput::ToggleLantern => Some(Button::Simple(GilButton::Unknown)),
+            GameInput::ToggleBuildMode => Some(Button::Simple(GilButton::Unknown)),
             GameInput::Mount => Some(Button::Simple(GilButton::South)),
             GameInput::StayFollow => Some(Button::Simple(GilButton::Unknown)),
             GameInput::Chat => Some(Button::Simple(GilButton::Unknown)),
@@ -684,6 +685,11 @@ impl ControllerSettings {
             GameInput::ToggleLantern => Some(LayerEntry {
                 button: Button::Simple(GilButton::DPadUp),
                 mod1: Button::Simple(GilButton::RightTrigger),
+                mod2: Button::Simple(GilButton::Unknown),
+            }),
+            GameInput::ToggleBuildMode => Some(LayerEntry {
+                button: Button::Simple(GilButton::Unknown),
+                mod1: Button::Simple(GilButton::Unknown),
                 mod2: Button::Simple(GilButton::Unknown),
             }),
             GameInput::Mount => Some(LayerEntry {

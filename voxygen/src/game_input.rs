@@ -53,6 +53,8 @@ pub enum GameInput {
     Glide,
     #[strum(serialize = "gameinput-togglelantern")]
     ToggleLantern,
+    #[strum(serialize = "gameinput-togglebuildmode")]
+    ToggleBuildMode,
     #[strum(serialize = "gameinput-swaploadout")]
     SwapLoadout,
     #[strum(serialize = "gameinput-togglewield")]

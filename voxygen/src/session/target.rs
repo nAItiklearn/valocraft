@@ -45,12 +45,15 @@ impl<T> Target<T> {
 /// Max distance an entity can be "targeted"
 pub const MAX_TARGET_RANGE: f32 = 500.0;
 
-/// Calculate what the cursor is pointing at within the 3d scene
+/// Calculate what the cursor is pointing at within the 3d scene.
+///
+/// `build_reach` is the maximum distance from the player's eyes to the centre
+/// of a targeted block, or `None` if the player cannot build at all.
 pub(super) fn targets_under_cursor(
     client: &Client,
     cam_pos: Vec3<f32>,
     cam_dir: Vec3<f32>,
-    can_build: bool,
+    build_reach: Option<f32>,
     active_mine_tool: Option<ToolKind>,
     viewpoint_entity: specs::Entity,
 ) -> (
@@ -110,9 +113,13 @@ pub(super) fn targets_under_cursor(
         .filter(|(_, b)| matches!(b, Ok(Some(b)) if b.mine_tool().zip(active_mine_tool).map_or(false, |(a, b)| a == b)))
         // ...and by the distance to the player's eye position
         .filter(|(d, _)| eye_pos.distance(break_tgt_pos(*d)) < MAX_PICKUP_RANGE);
-    let build_cast = Some(ray.until(|b| b.is_solid()).cast())
-        // Building is limited by the maximum target distance
-        .filter(|(d, _)| *d < MAX_TARGET_RANGE);
+    let build_cast = build_reach.and_then(|reach| {
+        Some(ray.until(|b| b.is_solid()).cast())
+            // Building is limited by the maximum target distance...
+            .filter(|(d, _)| *d < MAX_TARGET_RANGE)
+            // ...and by how far the player can reach
+            .filter(|(d, _)| eye_pos.distance(break_tgt_pos(*d)) <= reach)
+    });
     // Visual obstacles are limited by filled blocks
     let obstacle_cast =
         Some(ray.until(|b| b.is_filled()).cast()).filter(|(d, _)| *d < MAX_TARGET_RANGE);
@@ -217,14 +224,10 @@ pub(super) fn targets_under_cursor(
         position: break_tgt_pos(d),
     });
 
-    let build_target = if let (true, Some((d, _))) = (can_build, build_cast) {
-        Some(Target {
-            kind: Build(place_tgt_pos(d)),
-            position: break_tgt_pos(d),
-        })
-    } else {
-        None
-    };
+    let build_target = build_cast.map(|(d, _)| Target {
+        kind: Build(place_tgt_pos(d)),
+        position: break_tgt_pos(d),
+    });
 
     let collect_target = collect_cast.map(|(d, _)| Target {
         kind: Collectable,

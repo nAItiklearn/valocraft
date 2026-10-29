@@ -33,6 +33,7 @@ gameinput-walljump = Wall-Jump
 gameinput-glide = Glider
 gameinput-roll = Roll
 gameinput-togglelantern = Toggle Lantern
+gameinput-togglebuildmode = Toggle Build Mode
 gameinput-mount = Mount
 gameinput-stayfollow = Stay/Follow
 gameinput-chat = Chat

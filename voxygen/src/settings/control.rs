@@ -236,6 +236,7 @@ impl ControlSettings {
             GameInput::Sneak => Key::Named(NamedKey::Shift),
             GameInput::CancelClimb => Key::Named(NamedKey::Shift),
             GameInput::ToggleLantern => char("G"),
+            GameInput::ToggleBuildMode => char("Z"),
             GameInput::Mount => char("F"),
             GameInput::StayFollow => char("V"),
             GameInput::Map => char("M"),

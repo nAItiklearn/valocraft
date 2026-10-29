@@ -23,6 +23,7 @@ mod slot_grid;
 mod slots;
 mod social;
 mod subtitles;
+mod survival_build;
 mod trade;
 
 pub mod controller_icons;
@@ -38,6 +39,7 @@ pub use item_imgs::animate_by_pulse;
 pub use loot_scroller::LootMessage;
 pub use settings_window::ScaleChange;
 pub use subtitles::Subtitle;
+pub use survival_build::SurvivalBuildInfo;
 
 use bag::BagManager;
 use buffs::BuffsBar;
@@ -310,6 +312,7 @@ widget_ids! {
         popup,
         minimap,
         prompt_dialog,
+        survival_build,
         bag,
         trade,
         social,
@@ -670,6 +673,8 @@ pub struct HudInfo<'a> {
     pub selected_entity: Option<(specs::Entity, Instant)>,
     pub persistence_load_error: Option<SkillsPersistenceError>,
     pub key_state: &'a KeyState,
+    /// Present while survival build mode is active.
+    pub survival_build: Option<SurvivalBuildInfo<'a>>,
 }
 
 #[derive(Clone)]
@@ -3278,6 +3283,18 @@ impl Hud {
             skillsets.get(entity),
             bodies.get(entity),
         ) {
+            if let Some(survival_build) = &info.survival_build {
+                survival_build::SurvivalBuild::new(
+                    survival_build,
+                    global_state,
+                    &self.item_imgs,
+                    &self.fonts,
+                    i18n,
+                    &self.item_i18n,
+                )
+                .set(self.ids.survival_build, ui_widgets);
+            }
+
             let skillbar_events = Skillbar::new(
                 client,
                 &info,

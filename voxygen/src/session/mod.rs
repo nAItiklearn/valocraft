@@ -1,5 +1,6 @@
 pub mod interactable;
 pub mod settings_change;
+mod survival_build;
 mod target;
 
 use std::{cell::RefCell, collections::HashSet, rc::Rc, result::Result, time::Duration};
@@ -20,7 +21,10 @@ use common::{
         InventoryUpdateEvent, Pos, PresenceKind, Stats, UtteranceKind, Vel,
         inventory::slot::{EquipSlot, Slot},
         invite::InviteKind,
-        item::{ItemDesc, tool::ToolKind},
+        item::{
+            BuildFailedReason, BuildingBlock, ItemDesc, building::SURVIVAL_BUILD_REACH,
+            tool::ToolKind,
+        },
     },
     consts::MAX_MOUNT_RANGE,
     event::UpdateCharacterMetadata,
@@ -105,6 +109,7 @@ pub struct SessionState {
     inputs: comp::ControllerInputs,
     inputs_state: HashSet<GameInput>,
     selected_block: Block,
+    survival_build: survival_build::SurvivalBuild,
     walk_forward_dir: Vec2<f32>,
     walk_right_dir: Vec2<f32>,
     free_look: bool,
@@ -180,6 +185,7 @@ impl SessionState {
             inputs_state: HashSet::new(),
             hud,
             selected_block: Block::new(BlockKind::Misc, Rgb::broadcast(255)),
+            survival_build: Default::default(),
             walk_forward_dir,
             walk_right_dir,
             free_look: false,
@@ -373,6 +379,9 @@ impl SessionState {
                                         ),
                                     );
                                 }
+                            },
+                            InventoryUpdateEvent::BuildFailed { reason, .. } => {
+                                self.survival_build.fail(reason);
                             },
                             InventoryUpdateEvent::Collected(item) => {
                                 global_state.profile.tutorial.event_collect();
@@ -668,6 +677,19 @@ impl PlayState for SessionState {
                 .read_storage::<comp::CanBuild>()
                 .get(player_entity)
                 .map_or_else(|| false, |cb| cb.enabled);
+            // Creative building (in permitted build areas) takes precedence over
+            // survival building, which is limited by the player's reach.
+            let survival_build_active = !can_build
+                && self.survival_build.enabled
+                && client.server_constants().survival_building
+                && presence.controlling_char();
+            let build_reach = if can_build {
+                Some(f32::INFINITY)
+            } else if survival_build_active {
+                Some(SURVIVAL_BUILD_REACH)
+            } else {
+                None
+            };
 
             let active_mine_tool: Option<ToolKind> = if client.is_wielding() == Some(true) {
                 client
@@ -686,7 +708,7 @@ impl PlayState for SessionState {
                     &client,
                     cam_pos,
                     cam_dir,
-                    can_build,
+                    build_reach,
                     active_mine_tool,
                     self.viewpoint_entity().0,
                 );
@@ -794,8 +816,18 @@ impl PlayState for SessionState {
                                 self.walking_speed = false;
                                 let mut client = self.client.borrow_mut();
                                 // Building inputs take precedence... but only if there's an active
-                                // building target.
-                                if let Some(build_target) = build_target.filter(|_| state) {
+                                // building target. In survival build mode, blocks that can't be
+                                // gathered (ores, containers, ...) keep their usual interactions.
+                                if let Some(build_target) = build_target.filter(|_| state)
+                                    && (!survival_build_active
+                                        || client
+                                            .state()
+                                            .terrain()
+                                            .get(build_target.position_int())
+                                            .is_ok_and(|b| {
+                                                BuildingBlock::from_terrain(*b).is_some()
+                                            }))
+                                {
                                     client.remove_block(build_target.position_int());
                                 } else {
                                     client.handle_input(
@@ -810,11 +842,30 @@ impl PlayState for SessionState {
                                 self.walking_speed = false;
                                 let mut client = self.client.borrow_mut();
                                 if let Some(build_target) = build_target.filter(|_| state) {
-                                    let selected_pos = build_target.kind.0;
-                                    client.place_block(
-                                        selected_pos.map(|p| p.floor() as i32),
-                                        self.selected_block,
-                                    );
+                                    let selected_pos =
+                                        build_target.kind.0.map(|p| p.floor() as i32);
+                                    if survival_build_active {
+                                        let block = {
+                                            let inventories = client.inventories();
+                                            let inventory = inventories.get(client.entity());
+                                            if self.survival_build.selected().is_none() {
+                                                self.survival_build.ensure_selection(inventory);
+                                            }
+                                            self.survival_build.selected().filter(|block| {
+                                                survival_build::count(inventory, *block) > 0
+                                            })
+                                        };
+                                        match block {
+                                            Some(block) => {
+                                                client.place_block(selected_pos, block.block())
+                                            },
+                                            None => self
+                                                .survival_build
+                                                .fail(BuildFailedReason::MissingBlock),
+                                        }
+                                    } else {
+                                        client.place_block(selected_pos, self.selected_block);
+                                    }
                                 } else {
                                     client.handle_input(
                                         InputKind::Secondary,
@@ -848,6 +899,32 @@ impl PlayState for SessionState {
                                         })
                                     {
                                         self.selected_block = block;
+                                    }
+                                } else if survival_build_active
+                                    && state
+                                    && let Some(build_target) = build_target
+                                {
+                                    // Pick the targeted block, if there are any in the inventory.
+                                    let picked = client
+                                        .state()
+                                        .terrain()
+                                        .get(build_target.position_int())
+                                        .ok()
+                                        .and_then(|b| BuildingBlock::from_terrain(*b));
+                                    let inventories = client.inventories();
+                                    let inventory = inventories.get(client.entity());
+                                    match picked {
+                                        Some(block)
+                                            if survival_build::count(inventory, block) > 0 =>
+                                        {
+                                            self.survival_build.select(block)
+                                        },
+                                        Some(_) => self
+                                            .survival_build
+                                            .fail(BuildFailedReason::MissingBlock),
+                                        None => {
+                                            self.survival_build.fail(BuildFailedReason::Unbreakable)
+                                        },
                                     }
                                 } else if controlling_char {
                                     global_state.profile.tutorial.event_roll();
@@ -997,6 +1074,23 @@ impl PlayState for SessionState {
                             GameInput::SwapLoadout => {
                                 if state && controlling_char {
                                     self.client.borrow_mut().swap_loadout();
+                                }
+                            },
+                            GameInput::ToggleBuildMode if state => {
+                                let client = self.client.borrow();
+                                if client.server_constants().survival_building {
+                                    self.survival_build.enabled = !self.survival_build.enabled;
+                                    if self.survival_build.enabled {
+                                        let inventories = client.inventories();
+                                        self.survival_build
+                                            .ensure_selection(inventories.get(client.entity()));
+                                    }
+                                } else {
+                                    drop(client);
+                                    self.hud.new_message(
+                                        ChatType::CommandError
+                                            .into_msg(Content::localized("hud-build-unavailable")),
+                                    );
                                 }
                             },
                             GameInput::ToggleLantern if state && controlling_char => {
@@ -1718,6 +1812,12 @@ impl PlayState for SessionState {
             });
 
             let inverted_interactable_map = self.interactables.inverted_map();
+            let survival_build_info = survival_build_active.then(|| {
+                let client = self.client.borrow();
+                let inventories = client.inventories();
+                self.survival_build
+                    .hud_info(inventories.get(client.entity()))
+            });
 
             // Extract HUD events ensuring the client borrow gets dropped.
             let mut hud_events = self.hud.maintain(
@@ -1739,6 +1839,7 @@ impl PlayState for SessionState {
                     selected_entity: self.selected_entity,
                     persistence_load_error: self.metadata.skill_set_persistence_load_error,
                     key_state: &self.key_state,
+                    survival_build: survival_build_info,
                 },
                 inverted_interactable_map,
             );
@@ -1819,6 +1920,22 @@ impl PlayState for SessionState {
                         slot,
                         bypass_dialog,
                     } => {
+                        // Using a building block selects it for survival build mode.
+                        if let Slot::Inventory(inv_slot) = slot {
+                            let client = self.client.borrow();
+                            let inventories = client.inventories();
+                            if client.server_constants().survival_building
+                                && let Some(block) = survival_build::block_in_slot(
+                                    inventories.get(client.entity()),
+                                    inv_slot,
+                                )
+                            {
+                                self.survival_build.select(block);
+                                self.survival_build.enabled = true;
+                                continue;
+                            }
+                        }
+
                         let mut move_allowed = true;
 
                         if !bypass_dialog
